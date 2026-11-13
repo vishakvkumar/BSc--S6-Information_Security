@@ -6,7 +6,7 @@ Teaching material for the Semester 6 BSc course **Information Security**.
 
 | Module | Topic | Slides |
 |---|---|---|
-| 1 | Mathematical Foundations: groups, rings, fields, modular arithmetic, Euclidean algorithm, GF(p), polynomial arithmetic, GF(2ⁿ) | [`module-1/index.html`](module-1/index.html) |
+| 1 | Mathematical Foundations: groups, rings, fields, modular arithmetic, Euclidean algorithm, GF(p), polynomial arithmetic, GF(2ⁿ) | Simple: [`module-1/index.html`](module-1/index.html) · Detailed: [`module-1/detailed/index.html`](module-1/detailed/index.html) · PowerPoint: [`Module1_Maths_Behind_the_Lock.pptx`](module-1/Module1_Maths_Behind_the_Lock.pptx) |
 
 ## Using the slides
 

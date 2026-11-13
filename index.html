@@ -34,6 +34,9 @@ h1 span{color:var(--signal)}
 .mods a:hover .go,.mods a:focus-visible .go{background:var(--signal);border-color:var(--signal);color:var(--ink)}
 .mods a:focus-visible{outline:3px solid var(--signal);outline-offset:4px}
 .soon .go{color:#4A505C}
+.extra{font-family:var(--mono);font-size:13px;letter-spacing:.06em;color:#9AA1AE;padding:0 0 20px clamp(90px,14vw,160px)}
+.extra a{color:#E9EBEE;text-decoration:underline;text-underline-offset:3px}
+.extra a:hover{color:var(--signal)}
 footer{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:#6B7280}
 @media (max-width:560px){.mods a,.mods .soon{grid-template-columns:64px 1fr}.go{grid-column:2;justify-self:start}}
 </style>
@@ -46,7 +49,8 @@ footer{font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:#6B7280
     <p class="lead">Slides for each module of the course. Open a module, then use ← → to move, M for contents, N for notes and F for full screen.</p>
   </div>
   <ul class="mods">
-    <li><a href="module-1/"><span class="n">01</span><div><h2>Mathematical Foundations</h2><p>Groups, rings, fields · modular arithmetic · Euclidean algorithm · GF(p) · polynomial arithmetic · GF(2ⁿ)</p></div><span class="go">Open slides</span></a></li>
+    <li><a href="module-1/"><span class="n">01</span><div><h2>Mathematical Foundations</h2><p>Groups, rings, fields · modular arithmetic · Euclidean algorithm · GF(p) · polynomial arithmetic · GF(2ⁿ)</p></div><span class="go">Open slides</span></a>
+      <p class="extra"><a href="module-1/detailed/">Detailed version with calculators</a> · <a href="module-1/Module1_Maths_Behind_the_Lock.pptx">Download PowerPoint</a></p></li>
     <li><div class="soon"><span class="n">02</span><div><h2>Number Theory</h2><p>Primes, primality testing, Fermat’s and Euler’s theorems, Chinese Remainder Theorem, discrete logarithms</p></div><span class="go">Coming soon</span></div></li>
     <li><div class="soon"><span class="n">03</span><div><h2>Private Crypto-Systems</h2><p>Classical ciphers, block ciphers and DES, AES, multiple encryption, stream ciphers and RC4</p></div><span class="go">Coming soon</span></div></li>
     <li><div class="soon"><span class="n">04</span><div><h2>Public-Key Cryptography</h2><p>RSA, key management, Diffie–Hellman key exchange, elliptic curve cryptography</p></div><span class="go">Coming soon</span></div></li>

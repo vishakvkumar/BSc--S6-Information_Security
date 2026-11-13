@@ -3,1844 +3,738 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Module 1 · Maths Behind the Lock</title>
+<title>Module 1 · Maths Behind the Lock (Simple)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-/* Layout idea: Swiss poster grid on a fixed 1600×900 stage, scaled to fit.
-   Poster slides (big type) introduce each idea; study slides (definitions, tables, worked examples) carry the full content.
-   Paper slides alternate with ink slides; one signal colour marks the focal point of each slide. */
+/* Simple study deck: one idea per slide. Every content slide reads top to bottom:
+   question → one-line answer → points / example / steps → one thing to remember. 1600×900 stage, scaled to fit. */
 :root{
-  --paper:#E9EBEE;      /* cool grey paper */
-  --ink:#0C0E13;        /* near-black ink */
-  --muted:#5A6170;      /* secondary text */
-  --rule:#C3C7CF;       /* hairlines */
-  --signal:#FF4A1C;     /* focal accent */
-  --cobalt:#2443E6;     /* second accent: maths / formulas */
-  --card:#F7F8F9;
-  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
-  --body:"Archivo","Helvetica Neue",Arial,sans-serif;
-  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
-  --ease:cubic-bezier(.7,0,.2,1);
+  --paper:#E9EBEE; --ink:#0C0E13; --muted:#5A6170; --rule:#C3C7CF; --signal:#FF4A1C; --cobalt:#2443E6; --card:#FFFFFF; --soft:#F7F8F9;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif; --body:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace; --ease:cubic-bezier(.7,0,.2,1);
   color-scheme:light;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--ink);overflow:hidden}
 body{font-family:var(--body);color:var(--ink);-webkit-font-smoothing:antialiased}
-
-/* ---------- stage ---------- */
 #viewport{position:fixed;inset:0;display:grid;place-items:center}
-#stage{width:1600px;height:900px;position:relative;perspective:2200px;transform-origin:center center;flex:none}
-.slide{position:absolute;inset:0;padding:64px 96px 84px;background:var(--paper);color:var(--ink);
-  opacity:0;visibility:hidden;pointer-events:none;overflow:hidden;
-  transform:translate3d(7%,0,-120px) rotateY(-9deg);
-  transition:transform 1s var(--ease),opacity .7s var(--ease),visibility 0s linear 1s;}
-.slide.past{transform:translate3d(-7%,0,-120px) rotateY(9deg)}
-.slide.active{opacity:1;visibility:visible;pointer-events:auto;transform:none;
-  transition:transform 1s var(--ease),opacity .7s var(--ease),visibility 0s}
-.slide.inv{background:var(--ink);color:var(--paper)}
-.slide.inv .muted{color:#9AA1AE}
+#stage{width:1600px;height:900px;position:relative;perspective:2200px;flex:none}
+.slide{position:absolute;inset:0;padding:56px 88px 84px;background:var(--paper);display:flex;flex-direction:column;gap:22px;
+  opacity:0;visibility:hidden;pointer-events:none;overflow:hidden;transform:translate3d(6%,0,-100px) rotateY(-8deg);
+  transition:transform .9s var(--ease),opacity .6s var(--ease),visibility 0s linear .9s}
+.slide.past{transform:translate3d(-6%,0,-100px) rotateY(8deg)}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:transform .9s var(--ease),opacity .6s var(--ease),visibility 0s}
+.active .r{animation:rise .8s var(--ease) both;animation-delay:calc(var(--d,0)*70ms + 200ms)}
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide,.slide.active{transition:opacity .2s linear,visibility 0s;transform:none!important}.active .r{animation:none}}
 
-/* staggered entrances */
-.active .r{animation:rise .9s var(--ease) both;animation-delay:calc(var(--d,0) * 80ms + 220ms)}
-.active .rx{animation:slideIn 1s var(--ease) both;animation-delay:calc(var(--d,0) * 80ms + 220ms)}
-@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
-@keyframes slideIn{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){
-  .slide,.slide.active{transition:opacity .2s linear,visibility 0s;transform:none!important}
-  .active .r,.active .rx{animation:none}
-}
+.kick{font-family:var(--mono);font-size:16px;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);font-weight:600}
+h2{font-family:var(--display);font-stretch:80%;font-weight:800;font-size:60px;line-height:1;letter-spacing:-.01em;margin-top:-10px;text-wrap:balance}
+.lab{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+.answer{background:var(--card);border:1.5px solid var(--rule);border-radius:12px;padding:16px 26px 18px;display:flex;flex-direction:column;gap:6px}
+.answer .lab{color:var(--signal)}
+.answer p{font-size:32px;line-height:1.3}
+.mid{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-start}
+.two{display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:start}
+.points{list-style:none;display:flex;flex-direction:column;gap:14px;padding-top:6px}
+.points li{font-size:30px;line-height:1.3;padding-left:34px;position:relative}
+.points li::before{content:"";position:absolute;left:0;top:.42em;width:14px;height:14px;background:var(--ink)}
+.example{background:var(--soft);border:1.5px solid var(--rule);border-radius:12px;padding:16px 26px 20px}
+.example .lab{color:var(--cobalt)}
+.example pre{font-family:var(--mono);font-weight:600;font-size:27px;line-height:1.45;margin-top:8px;white-space:pre-wrap}
+.remember{background:var(--ink);color:var(--paper);border-radius:12px;padding:18px 26px;display:flex;gap:22px;align-items:baseline}
+.remember .lab{color:var(--signal);flex:none}
+.remember p{font-size:28px;font-weight:700;line-height:1.25}
+.result{background:var(--signal);border-radius:12px;padding:18px 26px}
+.result p{font-size:28px;font-weight:700;line-height:1.25}
+.steps{list-style:none;gap:14px;padding-top:6px}
+.steps li{display:flex;gap:22px;align-items:center}
+.steps .n{flex:none;width:46px;height:46px;border-radius:50%;background:var(--signal);color:#fff;display:grid;place-items:center;font-weight:700;font-size:20px}
+.steps code{font-family:var(--mono);font-weight:600;font-size:29px;white-space:pre-wrap}
+.intro{font-family:var(--mono);font-weight:600;font-size:30px;color:var(--cobalt);white-space:pre}
+table{border-collapse:collapse;width:100%;font-size:25px;background:var(--card)}
+th{background:var(--ink);color:var(--paper);text-align:left;padding:12px 18px;font-weight:700}
+td{border:1px solid var(--rule);padding:11px 18px;line-height:1.3}
+tr:nth-child(odd) td{background:var(--soft)}
+td.yes{color:var(--signal);font-weight:700} td.no{color:var(--muted);font-weight:700}
+.outcomes{display:grid;grid-template-columns:1fr 1fr;gap:20px 28px;align-content:start}
+.card{background:var(--card);border:1.5px solid var(--rule);border-radius:12px;padding:22px 26px;display:flex;gap:20px;align-items:center}
+.card .n{flex:none;width:48px;height:48px;border-radius:50%;background:var(--signal);color:#fff;display:grid;place-items:center;font-weight:700;font-size:21px}
+.card p{font-size:26px;line-height:1.3}
 
-/* ---------- type ---------- */
-.eyebrow{font-family:var(--mono);font-size:16px;letter-spacing:.14em;text-transform:uppercase;display:flex;gap:18px;align-items:center}
-.eyebrow b{color:var(--signal);font-weight:600}
-h1,h2{font-family:var(--display);font-stretch:72%;font-weight:850;line-height:.92;letter-spacing:-.02em;text-wrap:balance}
-h1{font-size:150px}
-h2{font-size:92px}
-h2.s{font-size:62px;line-height:.98}
-h3{font-family:var(--display);font-stretch:85%;font-weight:750;font-size:32px;line-height:1.1}
-p,li{font-size:26px;line-height:1.38;max-width:36em}
-.sm p,.sm li,p.sm{font-size:22px;line-height:1.4}
-.lead{font-size:31px;line-height:1.32;font-weight:400}
-.muted{color:var(--muted)}
-.mono{font-family:var(--mono)}
-.sig{color:var(--signal)}
-.cob{color:var(--cobalt)}
-.inv .cob{color:#7E93FF}
-.num{font-family:var(--display);font-stretch:62%;font-weight:900;line-height:.85;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.math{font-family:var(--mono);font-weight:600;color:var(--cobalt)}
-.inv .math{color:#7E93FF}
-.nw{white-space:nowrap}
-.tag{font-family:var(--mono);font-size:14px;letter-spacing:.12em;text-transform:uppercase;padding:5px 10px;border:1.5px solid currentColor;display:inline-block}
-.take{font-family:var(--display);font-stretch:80%;font-weight:750;font-size:36px;line-height:1.1;border-left:10px solid var(--signal);padding-left:24px;max-width:26em;text-wrap:balance}
-.hint{font-family:var(--mono);font-size:14px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
-.inv .hint{color:#9AA1AE}
-ul.list{list-style:none;display:flex;flex-direction:column;gap:10px}
-ul.list li{position:relative;padding-left:28px}
-ul.list li::before{content:"";position:absolute;left:0;top:.62em;width:12px;height:3px;background:var(--signal)}
-
-/* ---------- layout helpers ---------- */
-.col{display:flex;flex-direction:column}
-.row{display:flex}
-.fill{height:100%}
-.split{display:grid;grid-template-columns:1.1fr .9fr;gap:64px;height:100%}
-.half{display:grid;grid-template-columns:1fr 1fr;gap:56px}
-.between{justify-content:space-between}
-.center{justify-content:center}
-.gap8{gap:8px}.gap16{gap:16px}.gap24{gap:24px}.gap32{gap:32px}.gap48{gap:48px}
-.end{align-items:flex-end}
-.grow{flex:1;min-height:0}
-
-/* definition box */
-.def{border:2px solid var(--ink);background:var(--card);padding:20px 26px;display:flex;flex-direction:column;gap:10px}
-.def .k{font-family:var(--mono);font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--signal);font-weight:600}
-.def p{font-size:24px}
-.inv .def{border-color:#3A3F4A;background:#151820}
-
-/* bento */
-.bento{display:grid;gap:14px;flex:1;min-height:0}
-.cell{background:var(--card);padding:24px 28px;display:flex;flex-direction:column;justify-content:space-between;gap:12px;border:1px solid var(--rule)}
-.cell.ink{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.cell.sigbg{background:var(--signal);color:var(--ink);border-color:var(--signal)}
-.cell.cobbg{background:var(--cobalt);color:#fff;border-color:var(--cobalt)}
-.cell p{font-size:22px}
-.chain{font-family:var(--mono);font-size:17px;line-height:1.6}
-.chain i{font-style:normal;opacity:.5;padding:0 6px}
-
-/* timeline strip */
-.strip{display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid currentColor}
-.stop{padding:26px 26px 0 0;cursor:pointer;position:relative;background:none;border:none;color:inherit;text-align:left;font:inherit}
-.stop::before{content:"";position:absolute;top:-9px;left:0;width:16px;height:16px;background:var(--ink);border:2px solid currentColor;border-radius:50%;transition:background .3s,transform .3s}
-.stop.on::before,.stop:hover::before{background:var(--signal);border-color:var(--signal);transform:scale(1.35)}
-.stop:focus-visible{outline:3px solid var(--signal);outline-offset:6px}
-.stop .num{font-size:120px;color:#2C313B;transition:color .3s}
-.stop.on .num,.stop:hover .num{color:var(--signal)}
-
-/* axioms (poster) */
-.axioms{display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--ink)}
-.ax{padding:22px 26px 0 0;border-right:1px solid var(--rule);margin-right:26px;display:flex;flex-direction:column;gap:12px}
-.ax:last-child{border-right:none}
-.ax .num{font-size:120px;color:var(--signal)}
-.ax p{font-size:21px}
-
-/* tables */
-.tbl{border-collapse:collapse;font-family:var(--mono);font-size:20px;font-variant-numeric:tabular-nums}
-.tbl th,.tbl td{border:1px solid var(--rule);padding:6px 12px;text-align:center}
-.tbl th{background:var(--ink);color:var(--paper);font-weight:600}
-.tbl td.hl{background:var(--signal);color:var(--ink);font-weight:600}
-.tbl td.z{color:var(--muted)}
-.tbl.text td,.tbl.text th{text-align:left;font-family:var(--body);font-size:21px;padding:9px 14px}
-.tbl.text td:first-child{font-family:var(--mono);font-weight:600;color:var(--cobalt);white-space:nowrap}
-.inv .tbl th,.inv .tbl td{border-color:#3A3F4A}
-.inv .tbl th{background:#232733}
-.inv .tbl.text td:first-child{color:#7E93FF}
-.yes{color:var(--signal);font-weight:600}
-.no{color:var(--rule)}
-.inv .no{color:#3A3F4A}
-
-/* dial */
-.dial svg{width:100%;height:100%;display:block}
-.dial text{font-family:var(--mono);font-size:17px}
-
-/* inputs */
-.ctrl{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
-.field{display:flex;flex-direction:column;gap:6px}
-.field label{font-family:var(--mono);font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.inv .field label{color:#9AA1AE}
-.field input{font-family:var(--mono);font-size:30px;font-weight:600;width:170px;padding:10px 14px;border:2px solid currentColor;background:transparent;color:inherit;border-radius:0}
-.field input:focus{outline:3px solid var(--signal);outline-offset:2px}
-.btn{font-family:var(--mono);font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:12px 18px;border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer}
-.btn:hover,.btn.on{background:var(--signal);border-color:var(--signal);color:var(--ink)}
-.btn:focus-visible{outline:3px solid var(--signal);outline-offset:3px}
-
-/* step rows */
-.steps{font-family:var(--mono);font-size:24px;line-height:1.5;font-variant-numeric:tabular-nums}
-.steps .st{display:grid;grid-template-columns:44px 1fr;gap:12px;padding:5px 0;border-bottom:1px solid var(--rule)}
-.inv .steps .st{border-color:#2A2E37}
-.steps .st>span:first-child{color:var(--muted)}
-.steps .hl{color:var(--signal);font-weight:600}
-.steps.sm{font-size:20px}
-pre.code{font-family:var(--mono);font-size:21px;line-height:1.5;background:var(--ink);color:var(--paper);padding:20px 24px;white-space:pre}
-.inv pre.code{background:#151820;border:1px solid #3A3F4A}
-
-/* z7 pairs */
-.pairs{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
-.pair{border:2px solid var(--paper);padding:18px 0 12px;text-align:center;cursor:default;transition:background .25s,color .25s}
-.pair .num{font-size:100px;display:block}
-.pair small{font-family:var(--mono);font-size:16px}
-.pair.on{background:var(--signal);border-color:var(--signal);color:var(--ink)}
-
-/* bits */
-.bits{display:flex;gap:6px}
-.bit{width:62px;height:76px;display:grid;place-items:center;font-family:var(--mono);font-size:36px;font-weight:600;border:2px solid currentColor}
-.bit.one{background:var(--ink);color:var(--paper)}
-
-/* key points */
-.kp{display:grid;grid-template-columns:1fr 1fr;gap:30px 56px}
-.kp>div{display:grid;grid-template-columns:64px 1fr;gap:14px;border-top:2px solid currentColor;padding-top:14px}
-.kp .num{font-size:60px;color:var(--signal)}
-.kp p{font-size:26px}
+/* dark slides */
+.dark{background:var(--ink);color:var(--paper);justify-content:center;gap:28px}
+.dark h1{font-family:var(--display);font-stretch:72%;font-weight:850;font-size:132px;line-height:.92;letter-spacing:-.02em;max-width:11em}
+.dark .sub{font-size:34px;color:#9AA1AE}
+.dark .big{position:absolute;right:88px;bottom:40px;font-family:var(--display);font-stretch:62%;font-weight:900;font-size:300px;line-height:.8;color:var(--signal)}
+.dark .hint{font-family:var(--mono);font-size:15px;letter-spacing:.1em;color:#6B7280;text-transform:uppercase}
+.dark .kick{position:absolute;top:56px;left:88px}
+.secnum{font-family:var(--display);font-stretch:62%;font-weight:900;font-size:240px;line-height:.8;color:var(--signal)}
+.sec h1{font-size:100px}
 
 /* quiz */
-.q{border-top:2px solid var(--ink);padding-top:14px;display:flex;flex-direction:column;gap:10px}
-.q button.reveal{align-self:flex-start}
-.q .ans{font-family:var(--mono);font-size:19px;color:var(--signal);font-weight:600;visibility:hidden}
-.q.open .ans{visibility:visible}
+.quizhead{display:flex;flex-direction:column;gap:22px}
+.qctl{display:flex;gap:14px;align-items:center;position:absolute;right:88px;top:62px}
+#qscore{font-family:var(--mono);font-size:18px;font-weight:600;margin-right:8px}
+.btn{font-family:var(--mono);font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:12px 18px;border:2px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer;border-radius:8px}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn:hover{background:var(--signal);border-color:var(--signal);color:var(--ink)}
+.btn:focus-visible,.opt:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+.quiz{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;flex:1;min-height:0}
+.qcard{background:var(--card);border:1.5px solid var(--rule);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.qn{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--signal)}
+.qq{font-size:21px;font-weight:700;line-height:1.25;min-height:2.5em}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{font-family:var(--mono);font-size:17px;padding:9px 8px;border:1.5px solid var(--rule);background:var(--soft);border-radius:8px;cursor:pointer;color:var(--ink)}
+.opt:hover{border-color:var(--ink)}
+.opt.sel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.checked .opt.right{background:#1F9D55;border-color:#1F9D55;color:#fff}
+.checked .opt.sel.wrong{background:var(--signal);border-color:var(--signal);color:var(--ink)}
+.why{font-size:16px;line-height:1.35;color:var(--muted);visibility:hidden}
+.checked .why{visibility:visible}
 
-/* ---------- chrome ---------- */
+/* chrome */
 #chrome{position:fixed;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;z-index:20;font-family:var(--mono);font-size:14px;letter-spacing:.1em;pointer-events:none}
 #chrome>*{pointer-events:auto}
-#chrome button{background:rgba(12,14,19,.75);color:#E9EBEE;border:1px solid #3A3F4A;height:38px;min-width:42px;padding:0 12px;font:inherit;cursor:pointer;backdrop-filter:blur(6px)}
+#chrome button{background:rgba(12,14,19,.78);color:#E9EBEE;border:1px solid #3A3F4A;height:38px;min-width:42px;padding:0 12px;font:inherit;cursor:pointer}
 #chrome button:hover{border-color:var(--signal);color:var(--signal)}
-#chrome button:focus-visible{outline:2px solid var(--signal)}
-#count{background:rgba(12,14,19,.75);padding:10px 14px;border:1px solid #3A3F4A;color:#E9EBEE}
+#count{background:rgba(12,14,19,.78);padding:10px 14px;border:1px solid #3A3F4A;color:#E9EBEE}
+.row{display:flex;gap:8px}
 #bar{position:fixed;left:0;top:0;height:4px;background:var(--signal);z-index:21;transition:width .8s var(--ease)}
-#notes{position:fixed;left:50%;bottom:66px;transform:translateX(-50%) translateY(20px);width:min(980px,94vw);max-height:42vh;overflow:auto;background:#12151C;color:#E9EBEE;border:1px solid #3A3F4A;border-top:4px solid var(--signal);padding:20px 26px;font-size:17px;line-height:1.5;z-index:22;opacity:0;visibility:hidden;transition:opacity .3s,transform .3s,visibility 0s .3s;white-space:pre-line}
+#notes{position:fixed;left:50%;bottom:66px;transform:translateX(-50%) translateY(20px);width:min(900px,94vw);background:#12151C;color:#E9EBEE;border:1px solid #3A3F4A;border-top:4px solid var(--signal);padding:18px 24px;font-size:17px;line-height:1.5;z-index:22;opacity:0;visibility:hidden;transition:opacity .3s,transform .3s,visibility 0s .3s}
 #notes.open{opacity:1;visibility:visible;transform:translateX(-50%);transition:opacity .3s,transform .3s}
-#notes h4{font-family:var(--mono);font-size:13px;letter-spacing:.14em;color:var(--signal);margin-bottom:8px;font-weight:600}
-#menu{position:fixed;inset:0;background:rgba(12,14,19,.96);color:#E9EBEE;z-index:30;padding:48px 56px 80px;overflow:auto;opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+#notes h4{font-family:var(--mono);font-size:13px;letter-spacing:.14em;color:var(--signal);margin-bottom:8px}
+#menu{position:fixed;inset:0;background:rgba(12,14,19,.97);color:#E9EBEE;z-index:30;padding:44px 56px 80px;overflow:auto;opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
 #menu.open{opacity:1;visibility:visible;transition:opacity .3s}
-#menu h4{font-family:var(--mono);font-size:14px;letter-spacing:.14em;color:var(--signal);margin-bottom:10px}
+#menu .top{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);letter-spacing:.1em;font-size:14px;color:var(--signal)}
+#menu .top button{background:none;border:1px solid #3A3F4A;color:#E9EBEE;padding:8px 14px;font:inherit;cursor:pointer}
 #menuGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:28px 36px;margin-top:22px}
+#menu h4{font-family:var(--mono);font-size:14px;letter-spacing:.14em;color:var(--signal);margin-bottom:10px}
 #menu button.item{display:grid;grid-template-columns:38px 1fr;gap:6px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #2A2E37;color:#C9CDD5;font:15px/1.35 var(--body);padding:7px 0;cursor:pointer}
 #menu button.item span:first-child{font-family:var(--mono);color:#6B7280}
 #menu button.item:hover,#menu button.item.cur{color:var(--signal)}
-#menu .top{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);letter-spacing:.1em;font-size:14px}
-#menu .top button{background:none;border:1px solid #3A3F4A;color:#E9EBEE;padding:8px 14px;font:inherit;cursor:pointer}
 </style>
 </head>
 <body>
 <div id="bar"></div>
 <div id="viewport"><div id="stage">
 
-<!-- ======================= TITLE ======================= -->
-<section class="slide inv" data-unit="Start" data-title="Title">
-<!-- NOTES:
-• Open with a question: "Who has made a UPI payment or sent a WhatsApp message today?" Every hand goes up.
-• Each of those used the maths in this module.
-• Module 1 = 10 hours, mapped to CO1: understand the basics of abstract algebra and modular arithmetic.
-• Tell students they can study from this deck on their own: press M for the contents, N for notes, and use the interactive widgets.
--->
-  <div class="col fill between">
-    <div class="eyebrow r" style="--d:0"><b>BCS-MR-6-307</b><span>Information Security</span><span>Module 1 / 5</span></div>
-    <div class="col gap32">
-      <h1 class="r" style="--d:1">The maths that<br>keeps your phone <span class="sig">locked.</span></h1>
-      <p class="lead muted r" style="--d:2">Mathematical Foundations of Information Security: groups, rings, fields, modular arithmetic, the Euclidean algorithm and finite fields GF(p) and GF(2ⁿ).</p>
-    </div>
-    <div class="row between end r" style="--d:3">
-      <div class="row gap48 mono muted" style="font-size:17px;letter-spacing:.1em"><span>10 HOURS</span><span>CO1</span><span>SEMESTER 6</span><span>PRESS M FOR CONTENTS</span></div>
-      <div class="num sig" style="font-size:300px;margin-bottom:-40px">01</div>
-    </div>
-  </div>
+<!-- ===== 01 · Title ===== -->
+<section class="slide dark" data-unit="Start" data-title="Title">
+<!-- NOTES: Ask: who sent a WhatsApp message or made a UPI payment today? All of those used the maths in this module. -->
+  <div class="kick r" style="--d:0">BCS-MR-6-307 · Information Security · Semester 6</div>
+  <h1 class="r" style="--d:1">The Maths Behind the Lock</h1>
+  <p class="sub r" style="--d:2">Module 1: Mathematical Foundations, explained simply</p>
+  <div class="big r" style="--d:3">01</div>
+  <p class="hint r" style="--d:4">Press → or Space to start · M = contents · N = notes · F = full screen</p>
 </section>
 
-<!-- ======================= HOOK ======================= -->
-<section class="slide" data-unit="Start" data-title="You already use this maths">
-<!-- NOTES:
-• Walk the grid. Each cell ends in a Module 1 idea. Just plant the names; we explain them later.
-• HTTPS padlock: most sites encrypt with AES, which does its byte maths in a field with 256 elements, GF(2^8).
-• WhatsApp's key exchange uses Curve25519: arithmetic mod the prime 2^255 − 19. That is GF(p).
-• Aadhaar's last digit is a check digit made using a group.
-• QR codes still scan when torn because of Reed–Solomon error correction over GF(2^8).
--->
-  <div class="col fill gap32">
-    <div class="eyebrow r" style="--d:0"><b>Why bother</b><span>Real systems</span></div>
-    <h2 class="r" style="--d:1">You used this maths before you reached class.</h2>
-    <div class="bento" style="grid-template-columns:1.25fr 1fr 1fr;grid-template-rows:1fr 1fr">
-      <div class="cell sigbg r" style="--d:2;grid-row:span 2">
-        <span class="tag" style="align-self:flex-start">The focal number</span>
-        <div><div class="num" style="font-size:250px">256</div>
-        <p style="font-size:25px;max-width:15em">elements in the field AES works inside. Every byte your browser encrypts is one of them.</p></div>
-      </div>
-      <div class="cell r" style="--d:3"><h3>Banking site padlock</h3><div class="chain">HTTPS <i>→</i> AES <i>→</i> <span class="cob">GF(2⁸)</span></div></div>
-      <div class="cell ink r" style="--d:4"><h3>WhatsApp message</h3><div class="chain">Curve25519 <i>→</i> mod 2²⁵⁵−19 <i>→</i> <span class="sig">GF(p)</span></div></div>
-      <div class="cell ink r" style="--d:5"><h3>Your Aadhaar number</h3><div class="chain">12th digit <i>→</i> Verhoeff check <i>→</i> <span class="sig">a group</span></div></div>
-      <div class="cell r" style="--d:6"><h3>A torn QR code still scans</h3><div class="chain">Reed–Solomon <i>→</i> <span class="cob">GF(2⁸)</span></div></div>
-    </div>
-  </div>
+<!-- ===== 02 · What is this module about? ===== -->
+<section class="slide" data-unit="Start" data-title="What is this module about?">
+<!-- NOTES: Module 1 has 10 hours in the syllabus. Show students this map at the start of every class. -->
+  <div class="kick r" style="--d:0">Module 1</div><h2 class="r" style="--d:1">What is this module about?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>How mathematics helps computers hide, protect and check information.</p></div><div class="mid"><ul class="points r" style="--d:3"><li>1.1  Groups, rings and fields: the rules</li><li>1.2  Modular arithmetic: maths on a clock</li><li>1.3  Euclid and GF(p): finding GCDs and inverses</li><li>1.4  Polynomials and GF(2ⁿ): maths on bits and bytes</li></ul></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Rules → clock maths → undoing → bytes. Each part builds on the one before.</p></div>
 </section>
 
-<!-- ======================= ROADMAP ======================= -->
-<section class="slide inv" data-unit="Start" data-title="Roadmap">
-<!-- NOTES:
-• Four stops = the four syllabus units 1.1 to 1.4. Click a number to jump to that unit.
-• Each builds on the last: rules of the game → clock maths → finding inverses → the fields real ciphers use.
--->
-  <div class="col fill between">
-    <div class="eyebrow r" style="--d:0"><b>Roadmap</b><span>Module 1 · 4 units · 10 sessions</span></div>
-    <h2 class="r" style="--d:1;max-width:12em">From rules of a game to the fields inside AES.</h2>
-    <div class="strip r" style="--d:2">
-      <button class="stop on" data-go="u11"><div class="num">1.1</div><h3>Groups, rings, fields</h3><p class="muted" style="font-size:20px">The rules of the game</p></button>
-      <button class="stop" data-go="u12"><div class="num">1.2</div><h3>Modular arithmetic</h3><p class="muted" style="font-size:20px">Maths on a clock</p></button>
-      <button class="stop" data-go="u13"><div class="num">1.3</div><h3>Euclid &amp; GF(p)</h3><p class="muted" style="font-size:20px">Finding undo buttons</p></button>
-      <button class="stop" data-go="u14"><div class="num">1.4</div><h3>Polynomials &amp; GF(2ⁿ)</h3><p class="muted" style="font-size:20px">Bytes as maths</p></button>
-    </div>
-    <p class="hint r" style="--d:3">Click a unit to jump · ← → or Space to move · M contents · N notes · F full screen</p>
-  </div>
+<!-- ===== 03 · Why maths in security? ===== -->
+<section class="slide" data-unit="Start" data-title="Why maths in security?">
+<!-- NOTES: Use a WhatsApp message as the example. Ask what would happen if a step could not be undone. -->
+  <div class="kick r" style="--d:0">Why maths?</div><h2 class="r" style="--d:1">Why do we need maths in security?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>A message can be read on its way to your friend, unless it is protected.</p></div><div class="mid"><ul class="points r" style="--d:3"><li>Encryption: turning readable text into unreadable text</li><li>Decryption: turning it back into readable text</li><li>Both are done with maths</li></ul></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Every encryption step must be undoable.</p></div>
 </section>
 
-<!-- ======================= OBJECTIVES ======================= -->
-<section class="slide" data-unit="Start" data-title="What you will be able to do">
-<!-- NOTES:
-• Read the six outcomes. These are what CAE 1 and the end-semester exam will test from Module 1.
-• Students should come back to this slide at the end and tick each one.
--->
-  <div class="split" style="grid-template-columns:.8fr 1.2fr">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>CO1</b><span>Learning outcomes</span></div>
-      <h2 class="r" style="--d:1;font-size:84px">After this module you can…</h2>
-      <p class="muted r" style="--d:2;font-size:22px">CO1: Understand the basics of abstract algebra and modular arithmetic. Learning domain: Understand (U).</p>
-    </div>
-    <div class="kp" style="grid-template-columns:1fr;gap:12px;align-content:center">
-      <div class="r" style="--d:2"><span class="num">1</span><p>State the axioms of a group, abelian group, cyclic group, ring, integral domain and field, and test whether a given set fits.</p></div>
-      <div class="r" style="--d:3"><span class="num">2</span><p>Compute a mod n, use congruence rules and work in ℤₙ, including tables and inverses.</p></div>
-      <div class="r" style="--d:4"><span class="num">3</span><p>Find gcd(a, b) with the Euclidean algorithm.</p></div>
-      <div class="r" style="--d:5"><span class="num">4</span><p>Find a multiplicative inverse with the extended Euclidean algorithm and explain why ℤₚ is the field GF(p).</p></div>
-      <div class="r" style="--d:6"><span class="num">5</span><p>Add, multiply and divide polynomials, including over GF(2), and recognise irreducible polynomials.</p></div>
-      <div class="r" style="--d:7"><span class="num">6</span><p>Do arithmetic in GF(2ⁿ), including AES’s GF(2⁸).</p></div>
-    </div>
-  </div>
+<!-- ===== 04 · Example: Caesar cipher ===== -->
+<section class="slide" data-unit="Start" data-title="Example: Caesar cipher">
+<!-- NOTES: Do this live on the board. Then ask a student to decrypt KHOOR. -->
+  <div class="kick r" style="--d:0">Example</div><h2 class="r" style="--d:1">The Caesar cipher</h2>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>Message:  HELLO</code></li><li class="r" style="--d:4"><span class="n">2</span><code>Shift each letter 3 forward:  H→K, E→H, L→O, O→R</code></li><li class="r" style="--d:5"><span class="n">3</span><code>Secret message:  KHOOR</code></li><li class="r" style="--d:6"><span class="n">4</span><code>Shift each letter 3 back:  HELLO again</code></li></ol>
+  <div class="result r" style="--d:7"><p>Maths tells us when the 'undo' is possible.</p></div>
 </section>
 
-<!-- ======================= 1.1 RULE #1 ======================= -->
-<section class="slide" id="u11" data-unit="1.1 Groups, rings, fields" data-title="Every scramble must be undoable">
-<!-- NOTES:
-• Caesar shift on the board: HELLO +3 → KHOOR, −3 → HELLO.
-• If a step could not be reversed, the receiver could never read the message.
-• Algebra tells us exactly when an undo is guaranteed. That is why the course starts here.
--->
-  <div class="split">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>1.1</b><span>Why algebra first</span></div>
-      <h2 class="r" style="--d:1;font-size:118px">Every scramble must be <span class="sig">undoable.</span></h2>
-      <p class="lead r" style="--d:2">If the receiver can’t reverse each step, the message is lost forever. Algebra tells us when an undo is <em>guaranteed</em>.</p>
-    </div>
-    <div class="col gap16 center">
-      <div class="r" style="--d:3"><span class="hint">Plain text</span><div class="num" style="font-size:140px">HELLO</div></div>
-      <div class="math r" style="--d:4;font-size:28px">shift every letter +3 ↓</div>
-      <div class="r" style="--d:5"><span class="hint">Cipher text</span><div class="num sig" style="font-size:140px">KHOOR</div></div>
-      <div class="math r" style="--d:6;font-size:28px">shift every letter −3 ↓  (the undo)</div>
-      <div class="r" style="--d:7"><div class="num" style="font-size:140px">HELLO</div></div>
-    </div>
-  </div>
+<!-- ===== 05 · Unit 1.1 ===== -->
+<section class="slide dark sec" data-unit="1.1 Groups, rings, fields" data-title="Unit 1.1">
+<!-- NOTES:  -->
+  <div class="secnum r" style="--d:0">1.1</div>
+  <h1 class="r" style="--d:1">Groups, Rings and Fields</h1>
+  <p class="sub r" style="--d:2">The rules that make 'undo' possible</p>
 </section>
 
-<!-- ======================= 1.1 SET + OPERATION ======================= -->
-<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Sets and binary operations">
-<!-- NOTES:
-• Two ingredients: a SET (a collection of elements) and a BINARY OPERATION (a rule combining two elements into one).
-• Notation: a ∈ G means "a is an element of G". We write the operation as a • b; it could be +, ×, or something else.
-• "Things" need not be numbers: Rubik's cube moves count.
-• Everything in 1.1 asks: which rules does this set + operation obey?
--->
-  <div class="col fill gap32">
-    <div class="eyebrow r" style="--d:0"><b>1.1</b><span>Abstract algebra · the setup</span></div>
-    <h2 class="r s" style="--d:1">A set + an operation = a game with rules.</h2>
-    <div class="def r" style="--d:2"><span class="k">Definition</span><p>A <b>binary operation</b> • on a set G is a rule that takes any two elements <span class="math">a, b ∈ G</span> and gives one result <span class="math">a • b</span>. (<span class="math">∈</span> means “is an element of”.)</p></div>
-    <div class="bento" style="grid-template-columns:1fr 1fr 1fr">
-      <div class="cell r" style="--d:3"><span class="tag" style="align-self:flex-start">Example 1</span><div class="num cob" style="font-size:84px">{0,…,11}</div><p>Hours on a clock, combined by <b>adding hours</b>.</p></div>
-      <div class="cell r" style="--d:4"><span class="tag" style="align-self:flex-start">Example 2</span><div class="num cob" style="font-size:84px">ℤ, +</div><p>All integers …, −2, −1, 0, 1, 2, … combined by ordinary addition.</p></div>
-      <div class="cell ink r" style="--d:5"><span class="tag" style="align-self:flex-start">Example 3</span><div class="num sig" style="font-size:84px">Cube moves</div><p>Twists of a Rubik’s cube, combined by doing one twist, then another.</p></div>
-    </div>
-  </div>
+<!-- ===== 06 · What is a set? ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="What is a set?">
+<!-- NOTES: Keep it informal. Curly brackets just mean 'the collection of'. -->
+  <div class="kick r" style="--d:0">1.1</div><h2 class="r" style="--d:1">What is a set?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>A set is just a collection of things.</p></div><div class="mid"><div class="example r" style="--d:3"><span class="lab">Example</span><pre>A = {1, 2, 3}
+C = {0, 1, 2, …, 11}
+    (the numbers on a 12-hour clock)
+ℤ = {…, −2, −1, 0, 1, 2, …}
+    (all integers)</pre></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>We will use the 12-hour clock set again and again.</p></div>
 </section>
 
-<!-- ======================= 1.1 GROUP AXIOMS ======================= -->
-<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Group: the four axioms">
-<!-- NOTES:
-• Use the 12-hour clock for each rule.
-• A1 Closure: 9 + 5 = 2 o'clock; still in the set.
-• A2 Associativity: brackets don't change the answer.
-• A3 Identity: adding 0 hours changes nothing.
-• A4 Inverse: +5 is undone by +7, since 5 + 7 = 12 ≡ 0.
-• Students must memorise A1–A4 in this order; the same labels are used for rings and fields.
-• Order of a group = number of elements. The clock group has order 12; (ℤ, +) is infinite.
--->
-  <div class="col fill gap24">
-    <div class="row between end">
-      <div class="col gap16"><div class="eyebrow r" style="--d:0"><b>1.1</b><span>Groups</span></div>
-      <h2 class="r s" style="--d:1">A group {G, •} obeys four axioms.</h2></div>
-      <p class="muted r" style="--d:1;font-size:20px;max-width:17em">Example throughout: a 12-hour clock with “add hours”.</p>
-    </div>
-    <div class="axioms">
-      <div class="ax r" style="--d:2"><div class="num">A1</div><h3>Closure</h3><p class="muted">Combine any two members and you get a member.</p><div class="math" style="font-size:19px">a, b ∈ G ⇒ a•b ∈ G</div><div class="mono" style="font-size:18px">9 + 5 → 2 o’clock</div></div>
-      <div class="ax r" style="--d:3"><div class="num">A2</div><h3>Associative</h3><p class="muted">Brackets don’t matter.</p><div class="math" style="font-size:19px">a•(b•c) = (a•b)•c</div><div class="mono" style="font-size:18px">(3+4)+5 = 3+(4+5)</div></div>
-      <div class="ax r" style="--d:4"><div class="num">A3</div><h3>Identity</h3><p class="muted">There is a do-nothing element e.</p><div class="math" style="font-size:19px">a•e = e•a = a</div><div class="mono" style="font-size:18px">7 + 0 = 7, so e = 0</div></div>
-      <div class="ax r" style="--d:5"><div class="num">A4</div><h3>Inverse</h3><p class="muted">Every a has a partner a′ that cancels it.</p><div class="math" style="font-size:19px">a•a′ = a′•a = e</div><div class="mono" style="font-size:18px">5 + 7 = 12 ≡ 0</div></div>
-    </div>
-    <div class="def r" style="--d:6"><span class="k">Order of a group</span><p class="sm">The number of elements in G, written |G|. A <b>finite group</b> has finitely many elements (clock: order 12); otherwise it is an <b>infinite group</b> (ℤ under +).</p></div>
-  </div>
+<!-- ===== 07 · What is a binary operation? ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="What is a binary operation?">
+<!-- NOTES: Ask students to show 9 + 5 on a real clock face. -->
+  <div class="kick r" style="--d:0">1.1</div><h2 class="r" style="--d:1">What is a binary operation?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>A rule that takes two things and gives one result.</p></div><div class="mid"><div class="example r" style="--d:3"><span class="lab">Example</span><pre>2 + 3 = 5
+4 × 5 = 20
+On a clock: 9 + 5 = 2
+    (start at 9, move 5 hours)</pre></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>'Binary' means it works on two things at a time.</p></div>
 </section>
 
-<!-- ======================= 1.1 GROUP EXAMPLES ======================= -->
-<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Is it a group? Examples">
-<!-- NOTES:
-• Go row by row and ask students which axiom fails before revealing the reason.
-• (ℤ, ×): 2 has no inverse because 1/2 is not an integer → fails A4.
-• (ℕ, +): natural numbers {0,1,2,…} have no negatives → fails A4.
-• Sₙ: the permutations (rearrangements) of n objects under composition. S₃ has 3! = 6 elements and is not abelian.
-• (ℝ without 0, ×): every non-zero real has inverse 1/x. We must remove 0 because 0 has no inverse.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.1</b><span>Groups · examples</span></div>
-    <h2 class="r s" style="--d:1">Test each axiom. One failure means no group.</h2>
-    <table class="tbl text r" style="--d:2;width:100%">
-      <tr><th style="width:24%">Set, operation</th><th style="width:13%">Group?</th><th>Why</th></tr>
-      <tr><td>ℤ, +</td><td class="yes">Yes</td><td>Identity 0; inverse of a is −a. Infinite group.</td></tr>
-      <tr><td>ℤ₁₂, + mod 12</td><td class="yes">Yes</td><td>The clock. Identity 0; inverse of a is 12 − a. Finite, order 12.</td></tr>
-      <tr><td>ℝ \ {0}, ×</td><td class="yes">Yes</td><td>Identity 1; inverse of x is 1/x. Zero is removed because it has no inverse.</td></tr>
-      <tr><td>S₃, composition</td><td class="yes">Yes</td><td>The 6 ways to rearrange 3 objects. Every rearrangement can be undone. Order matters, so it is not abelian.</td></tr>
-      <tr><td>ℤ, ×</td><td class="sig">No</td><td>Fails A4: 2 has no inverse, since 1/2 is not an integer.</td></tr>
-      <tr><td>ℕ = {0,1,2,…}, +</td><td class="sig">No</td><td>Fails A4: there is no natural number you can add to 5 to get 0.</td></tr>
-    </table>
-  </div>
+<!-- ===== 08 · What is a group? ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="What is a group?">
+<!-- NOTES: Next slide explains each rule with the clock. -->
+  <div class="kick r" style="--d:0">1.1</div><h2 class="r" style="--d:1">What is a group?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>A set with an operation that follows 4 rules, called A1 to A4.</p></div><div class="mid"><div class="two"><ul class="points r" style="--d:3"><li>A1  Closure</li><li>A2  Associativity</li><li>A3  Identity</li><li>A4  Inverse</li></ul><div class="example r" style="--d:4"><span class="lab">Example</span><pre>Our example:
+the 12-hour clock
+with + (adding hours)</pre></div></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>A1 + A2 + A3 + A4 = Group</p></div>
 </section>
 
-<!-- ======================= 1.1 ABELIAN ======================= -->
-<section class="slide inv" data-unit="1.1 Groups, rings, fields" data-title="Abelian groups">
-<!-- NOTES:
-• ABELIAN group = a group that also satisfies A5 (commutative): a • b = b • a for all a, b. Named after Niels Henrik Abel.
-• Money: ₹50 then ₹20 = ₹20 then ₹50. (ℤ, +) and the clock group are abelian.
-• Socks then shoes ≠ shoes then socks. Rubik's cube moves and S₃ are non-abelian groups.
--->
-  <div class="split" style="grid-template-columns:1fr 1fr;gap:0">
-    <div class="col between" style="padding-right:56px;border-right:1px solid #2A2E37">
-      <div class="eyebrow r" style="--d:0"><b>1.1</b><span>A5 · commutative</span></div>
-      <div class="col gap24">
-        <div class="num sig rx nw" style="--d:1;font-size:140px">a•b = b•a</div>
-        <h3 class="r" style="--d:2">Abelian group = group + axiom A5.</h3>
-        <p class="muted r" style="--d:3">Order doesn’t matter. Get ₹50 then ₹20, or ₹20 then ₹50: same balance. Examples: (ℤ, +), the clock ℤ₁₂.</p>
-      </div>
-    </div>
-    <div class="col between" style="padding-left:56px">
-      <div class="eyebrow r" style="--d:2"><span>Non-abelian</span></div>
-      <div class="col gap24">
-        <div class="num rx nw" style="--d:3;font-size:140px;color:#7E93FF">a•b ≠ b•a</div>
-        <h3 class="r" style="--d:4">Order matters, but it is still a group.</h3>
-        <p class="muted r" style="--d:5">Rubik’s cube: top-then-right ≠ right-then-top. Permutation group S₃. Every move can still be undone.</p>
-      </div>
-    </div>
-  </div>
+<!-- ===== 09 · The four group rules ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="The four group rules">
+<!-- NOTES: Students should memorise this table for the exam. -->
+  <div class="kick r" style="--d:0">1.1</div><h2 class="r" style="--d:1">The four group rules</h2>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>Rule</th><th>Simple meaning</th><th>Clock example</th></tr>
+  <tr><td><b>A1 Closure</b></td><td>The answer stays inside the set</td><td>9 + 5 = 2, still a clock number</td></tr>
+  <tr><td><b>A2 Associativity</b></td><td>Brackets don't matter</td><td>(3 + 4) + 5 = 3 + (4 + 5)</td></tr>
+  <tr><td><b>A3 Identity</b></td><td>Something that changes nothing</td><td>7 + 0 = 7, so 0 is the identity</td></tr>
+  <tr><td><b>A4 Inverse</b></td><td>Every element has an 'undo'</td><td>5 + 7 = 12 ≡ 0, so 7 undoes 5</td></tr></table></div>
+  <div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Order of a group = number of elements. Clock: 12. Integers: infinite.</p></div>
 </section>
 
-<!-- ======================= 1.1 AADHAAR ======================= -->
-<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Case study: Aadhaar check digit">
-<!-- NOTES:
-• The 12th digit of every Aadhaar number is a check digit made with the Verhoeff algorithm.
-• Verhoeff is built on the dihedral group D5: the 10 symmetries of a regular pentagon (5 rotations + 5 flips) ↔ digits 0–9.
-• D5 is non-abelian, which is exactly why it catches two neighbouring digits being swapped (an ordinary sum can't, since 3+8 = 8+3).
-• Result: every single wrong digit and every swap of two adjacent digits is detected.
--->
-  <div class="split" style="grid-template-columns:.95fr 1.05fr">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>Case study</b><span>Groups in India</span></div>
-      <div class="dial r" style="--d:1;width:460px;height:460px"><svg id="pentagon" viewBox="0 0 470 470" aria-label="Regular pentagon with its mirror lines and a 72 degree rotation"></svg></div>
-      <p class="hint r" style="--d:2">D₅: 5 rotations + 5 flips = 10 symmetries ↔ digits 0–9</p>
-    </div>
-    <div class="col between">
-      <h2 class="r" style="--d:1;font-size:72px">Your Aadhaar’s last digit is checked by a <span class="sig">group.</span></h2>
-      <div class="col gap24">
-        <div class="r" style="--d:2"><div class="hint">Aadhaar format</div><div class="num nw" style="font-size:90px">XXXX XXXX XXX<span class="sig">C</span></div></div>
-        <p class="r" style="--d:3">The check digit <b class="sig">C</b> comes from the <b>Verhoeff algorithm</b>, built on the symmetry group of a pentagon, D₅.</p>
-        <p class="r" style="--d:4">Because D₅ is non-abelian, it catches <b>every single wrong digit</b> and <b>every swap of two neighbouring digits</b>.</p>
-      </div>
-      <p class="take r" style="--d:5;font-size:32px">A plain digit sum can’t tell 38 from 83. A non-abelian group can.</p>
-    </div>
-  </div>
+<!-- ===== 10 · What is an abelian group? ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="What is an abelian group?">
+<!-- NOTES: If possible, bring a Rubik's cube to class to show the two orders give different results. -->
+  <div class="kick r" style="--d:0">1.1</div><h2 class="r" style="--d:1">What is an abelian group?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>A group where order doesn't matter: a + b = b + a. This is rule A5.</p></div><div class="mid"><ul class="points r" style="--d:3"><li>Abelian: ₹50 then ₹20 = ₹20 then ₹50. Same balance.</li><li>Not abelian: Rubik's cube. Top-then-right ≠ right-then-top.</li><li>The cube is still a group: every move can be undone.</li></ul></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Abelian = group + A5 (order doesn't matter).</p></div>
 </section>
 
-<!-- ======================= 1.1 CYCLIC DEFINITIONS ======================= -->
-<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Cyclic groups: definitions">
-<!-- NOTES:
-• Exponentiation in a group means repeating the operation: a³ = a • a • a. With + this means 3a; with × it means a·a·a.
-• a⁰ = e (identity) and a⁻ⁿ = (a′)ⁿ.
-• Cyclic: one element a (the generator) produces every element as aᵏ.
-• Facts: every cyclic group is abelian. A cyclic group can be finite or infinite.
-• Examples: (ℤ, +) is generated by 1 (and by −1). ℤₙ under + mod n is generated by 1.
-• Link to Module 4: Diffie–Hellman uses a generator of a large cyclic group.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.1</b><span>Cyclic groups</span></div>
-    <h2 class="r s" style="--d:1">Repeat one element, reach them all.</h2>
-    <div class="half grow">
-      <div class="col gap16">
-        <div class="def r" style="--d:2"><span class="k">Exponentiation in a group</span><p class="sm"><span class="math">a³ = a • a • a</span>, &nbsp;<span class="math">a⁰ = e</span>, &nbsp;<span class="math">a⁻ⁿ = (a′)ⁿ</span><br>With + this is just 3a; with × it is a·a·a.</p></div>
-        <div class="def r" style="--d:3"><span class="k">Definition · cyclic group</span><p class="sm">A group G is <b>cyclic</b> if every element of G is a power <span class="math">aᵏ</span> (k an integer) of one fixed element <span class="math">a ∈ G</span>. That element a is a <b>generator</b> of G.</p></div>
-        <ul class="list sm r" style="--d:4"><li>Every cyclic group is abelian.</li><li>A cyclic group may be finite or infinite.</li></ul>
-      </div>
-      <div class="col gap16">
-        <div class="hint r" style="--d:3">Examples</div>
-        <table class="tbl text r" style="--d:4;width:100%">
-          <tr><th>Group</th><th>Generator</th><th>How</th></tr>
-          <tr><td>ℤ, +</td><td>1</td><td>…, −2 = (−1)+(−1), 0, 1, 2 = 1+1, …</td></tr>
-          <tr><td>ℤ₁₂, +</td><td>1, 5, 7, 11</td><td>Adding 5 again and again visits all 12 hours</td></tr>
-          <tr><td>ℤ₁₂, +</td><td class="sig">not 4</td><td>4, 8, 0, 4, … only 3 hours</td></tr>
-        </table>
-        <p class="sm muted r" style="--d:5">Try it on the next slide.</p>
-      </div>
-    </div>
-  </div>
+<!-- ===== 11 · Real life: Aadhaar ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Real life: Aadhaar">
+<!-- NOTES: This works because the pentagon group is not abelian, so order matters. -->
+  <div class="kick r" style="--d:0">Real life</div><h2 class="r" style="--d:1">Your Aadhaar number uses a group</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>The last digit of an Aadhaar number is a check digit made using a group.</p></div><div class="mid"><ul class="points r" style="--d:3"><li>It uses the Verhoeff algorithm</li><li>Built on the 10 ways to turn or flip a pentagon</li><li>It catches any one wrong digit</li><li>It catches two neighbouring digits swapped</li></ul></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>A simple digit sum can't tell 38 from 83. This group can.</p></div>
 </section>
 
-<!-- ======================= 1.1 GENERATOR INTERACTIVE ======================= -->
-<section class="slide inv" data-unit="1.1 Groups, rings, fields" data-title="Try it: find a generator">
-<!-- NOTES:
-• Step 5 visits all 12 hours → generator. Step 4 visits only 4, 8, 0 → not a generator.
-• Ask: what is gcd(5,12)? 1. gcd(4,12)? 4. A step generates ℤₙ exactly when gcd(step, n) = 1. Plant this for unit 1.3.
--->
-  <div class="split">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>1.1</b><span>Interactive</span></div>
-      <h2 class="r" style="--d:1;font-size:84px">One move can build the whole group.</h2>
-      <p class="r" style="--d:2">Keep adding the same step on a 12-hour clock. If you land on <b>every</b> hour, that step is a <span class="sig"><b>generator</b></span>.</p>
-      <div class="col gap16 r" style="--d:3">
-        <div class="ctrl"><button class="btn on" data-gen="5">Step 5</button><button class="btn" data-gen="4">Step 4</button><button class="btn" data-gen="7">Step 7</button><button class="btn" data-gen="6">Step 6</button><button class="btn" data-gen="1">Step 1</button></div>
-        <div id="genOut" class="mono" style="font-size:22px;min-height:2.6em;line-height:1.4"></div>
-      </div>
-    </div>
-    <div class="dial r" style="--d:2;align-self:center;width:620px;height:620px"><svg id="genDial" viewBox="0 0 640 640" aria-label="12-hour clock showing hours visited"></svg></div>
-  </div>
+<!-- ===== 12 · What is a cyclic group? ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="What is a cyclic group?">
+<!-- NOTES: Ask students to try adding 7, and then 6. -->
+  <div class="kick r" style="--d:0">1.1</div><h2 class="r" style="--d:1">What is a cyclic group?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>A group where repeating one element (the generator) reaches every element.</p></div>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>Keep adding 5 on a 12-hour clock:</code></li><li class="r" style="--d:4"><span class="n">2</span><code>0 → 5 → 10 → 3 → 8 → 1 → 6 → 11 → 4 → 9 → 2 → 7 → 0</code></li><li class="r" style="--d:5"><span class="n">3</span><code>All 12 reached, so 5 is a generator ✓</code></li><li class="r" style="--d:6"><span class="n">4</span><code>Keep adding 4:  0 → 4 → 8 → 0</code></li><li class="r" style="--d:7"><span class="n">5</span><code>Only 3 reached, so 4 is not a generator ✗</code></li></ol>
+  <div class="result r" style="--d:8"><p>Every cyclic group is abelian. Used in Diffie–Hellman (Module 4).</p></div>
 </section>
 
-<!-- ======================= 1.1 RING (POSTER) ======================= -->
-<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Rings add multiplication">
-<!-- NOTES:
-• A ring has TWO operations, + and ×. Division is not required.
-• Integers: 7 ÷ 2 = 3.5, not an integer.
-• Clock ℤ₁₂: 4 × 3 = 12 ≡ 0 though neither is zero. Such numbers are "zero divisors" and they block division.
--->
-  <div class="col fill gap48">
-    <div class="eyebrow r" style="--d:0"><b>1.1</b><span>Rings · the idea</span></div>
-    <h2 class="r" style="--d:1;max-width:12em">A ring lets you add <em>and</em> multiply.</h2>
-    <div class="bento" style="grid-template-columns:1fr 1fr 1fr">
-      <div class="cell r" style="--d:3"><span class="tag" style="align-self:flex-start">Works</span><div class="num cob" style="font-size:110px">+ − ×</div><p>Add, subtract and multiply always stay inside the set.</p></div>
-      <div class="cell r" style="--d:4"><span class="tag" style="align-self:flex-start">Breaks · integers</span><div class="num nw" style="font-size:100px">7 ÷ 2 = <span class="sig">3.5</span></div><p>Not a whole number. Division escapes ℤ.</p></div>
-      <div class="cell ink r" style="--d:5"><span class="tag" style="align-self:flex-start">Breaks · 12-hr clock</span><div class="num nw" style="font-size:100px">4 × 3 = <span class="sig">0</span></div><p>Two non-zero numbers multiply to zero, so “÷ 4” has no answer.</p></div>
-    </div>
-    <p class="take r" style="--d:6">A ring is missing exactly one thing: division.</p>
-  </div>
+<!-- ===== 13 · What is a ring? ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="What is a ring?">
+<!-- NOTES: A group has one operation. A ring has two. -->
+  <div class="kick r" style="--d:0">1.1</div><h2 class="r" style="--d:1">What is a ring?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>A set where you can add, subtract and multiply, but not always divide.</p></div><div class="mid"><div class="example r" style="--d:3"><span class="lab">Example</span><pre>Integers:
+7 + 3 = 10   ✓
+7 − 3 = 4    ✓
+7 × 3 = 21   ✓
+7 ÷ 2 = 3.5  ✗  not an integer</pre></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>A ring has two operations: + and ×.</p></div>
 </section>
 
-<!-- ======================= 1.1 RING (FORMAL) ======================= -->
-<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Ring, commutative ring, integral domain">
-<!-- NOTES:
-• Ring {R, +, ×}: A1–A5 (R is an abelian group under +), plus M1 closure of ×, M2 associativity of ×, M3 distributive laws.
-• Commutative ring adds M4: ab = ba.
-• Integral domain = commutative ring + M5 (multiplicative identity 1) + M6 (no zero divisors: ab = 0 ⇒ a = 0 or b = 0).
-• Examples: ℤ is an integral domain. ℤ₁₂ is a commutative ring but NOT an integral domain (4 × 3 = 0). 2×2 matrices form a non-commutative ring. Even integers {…,−2,0,2,…} form a ring with no 1.
-• Convention: we often write ab for a × b.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.1</b><span>Rings · formal definition</span></div>
-    <h2 class="r s" style="--d:1">Three levels of ring.</h2>
-    <div class="half grow" style="grid-template-columns:1.1fr .9fr">
-      <table class="tbl text r" style="--d:2;width:100%;align-self:start">
-        <tr><th>Axiom</th><th>Meaning</th></tr>
-        <tr><td>A1–A5</td><td>R is an <b>abelian group under +</b> (identity 0, inverse −a)</td></tr>
-        <tr><td>M1</td><td>Closure under ×: a, b ∈ R ⇒ ab ∈ R</td></tr>
-        <tr><td>M2</td><td>Associative ×: a(bc) = (ab)c</td></tr>
-        <tr><td>M3</td><td>Distributive: a(b+c) = ab+ac, (a+b)c = ac+bc</td></tr>
-        <tr><td>M4</td><td>Commutative ×: ab = ba</td></tr>
-        <tr><td>M5</td><td>Multiplicative identity 1: a·1 = 1·a = a</td></tr>
-        <tr><td>M6</td><td>No zero divisors: ab = 0 ⇒ a = 0 or b = 0</td></tr>
-      </table>
-      <div class="col gap16">
-        <div class="def r" style="--d:3"><span class="k">Ring</span><p class="sm">A1–A5 + M1–M3. &nbsp;e.g. 2×2 real matrices (not commutative); even integers (no 1).</p></div>
-        <div class="def r" style="--d:4"><span class="k">Commutative ring</span><p class="sm">Ring + M4. &nbsp;e.g. ℤ₁₂ with + and × mod 12.</p></div>
-        <div class="def r" style="--d:5" ><span class="k">Integral domain</span><p class="sm">Commutative ring + M5 + M6. &nbsp;e.g. ℤ. ℤ₁₂ fails M6 because 4 × 3 = 0.</p></div>
-      </div>
-    </div>
-  </div>
+<!-- ===== 14 · Three kinds of ring ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Three kinds of ring">
+<!-- NOTES: M stands for multiplication rules, just as A stands for addition rules. -->
+  <div class="kick r" style="--d:0">1.1</div><h2 class="r" style="--d:1">Three kinds of ring</h2>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>Name</th><th>Rules needed</th><th>What the new rules mean</th></tr>
+  <tr><td><b>Ring</b></td><td>A1–A5 + M1–M3</td><td>M1: × stays inside · M2: a(bc) = (ab)c · M3: a(b + c) = ab + ac</td></tr>
+  <tr><td><b>Commutative ring</b></td><td>Ring + M4</td><td>M4: ab = ba</td></tr>
+  <tr><td><b>Integral domain</b></td><td>Commutative ring + M5 + M6</td><td>M5: there is a 1 · M6: no zero divisors</td></tr></table></div>
+  <div class="remember r" style="--d:5"><span class="lab">Remember</span><p>ℤ (integers) is an integral domain.</p></div>
 </section>
 
-<!-- ======================= 1.1 FIELD (POSTER) ======================= -->
-<section class="slide inv" data-unit="1.1 Groups, rings, fields" data-title="Fields allow division">
-<!-- NOTES:
-• FIELD = + − × ÷ all work (never ÷ 0).
-• Ladder: Group → Ring → Field. Each level keeps the rules above and adds power.
-• Ciphers like AES multiply bytes; to decrypt they must divide. So ciphers live in fields.
--->
-  <div class="split" style="grid-template-columns:1fr 1fr">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>1.1</b><span>Fields · the idea</span></div>
-      <h2 class="r" style="--d:1;font-size:100px">A field: + − × ÷ all work.</h2>
-      <p class="lead muted r" style="--d:2">Only rule: never divide by zero. Ciphers multiply during encryption, so they must divide to decrypt. <b style="color:var(--paper)">Ciphers live in fields.</b></p>
-      <div class="row gap16 r" style="--d:3;flex-wrap:wrap">
-        <span class="tag sig">✓ ℚ fractions</span><span class="tag sig">✓ ℝ reals</span><span class="tag sig">✓ ℤ₇ 7-hr clock</span><span class="tag muted">✗ ℤ integers</span><span class="tag muted">✗ ℤ₁₂</span>
-      </div>
-    </div>
-    <div class="col center" style="gap:14px">
-      <div class="rx" style="--d:2;border:2px solid #3A3F4A;padding:26px 30px">
-        <div class="row between"><h3>Group</h3><span class="mono muted">one operation + undo</span></div>
-        <div class="rx" style="--d:3;border:2px solid #7E93FF;padding:26px 30px;margin-top:22px">
-          <div class="row between"><h3 class="cob">Ring</h3><span class="mono muted">+ and ×</span></div>
-          <div class="rx" style="--d:4;background:var(--signal);color:var(--ink);padding:34px 30px;margin-top:22px">
-            <div class="row between end"><h3 style="font-size:46px">Field</h3><span class="mono">+ − × ÷</span></div>
-          </div>
-        </div>
-      </div>
-      <p class="hint r" style="--d:5">Each level keeps the rules above it and adds one more power.</p>
-    </div>
-  </div>
+<!-- ===== 15 · What is a zero divisor? ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="What is a zero divisor?">
+<!-- NOTES: In normal numbers this never happens: if ab = 0, then a = 0 or b = 0. -->
+  <div class="kick r" style="--d:0">1.1</div><h2 class="r" style="--d:1">What is a zero divisor?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>Two numbers that are not zero, but multiply to give zero.</p></div><div class="mid"><div class="example r" style="--d:3"><span class="lab">Example</span><pre>On a 12-hour clock (mod 12):
+4 × 3 = 12 ≡ 0
+4 ≠ 0 and 3 ≠ 0</pre></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>ℤ₁₂ has zero divisors, so it is not an integral domain.</p></div>
 </section>
 
-<!-- ======================= 1.1 FIELD (FORMAL) ======================= -->
-<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Field: formal definition">
-<!-- NOTES:
-• Field {F, +, ×} = integral domain + M7: every non-zero a has an inverse a⁻¹ with aa⁻¹ = a⁻¹a = 1.
-• Division is defined as a / b = a(b⁻¹).
-• Examples: ℚ, ℝ, ℂ, and ℤₚ for prime p. Non-examples: ℤ (2 has no inverse), ℤₙ for composite n.
-• In 1.3 we prove ℤₚ is a field; we call it GF(p).
--->
-  <div class="col fill gap32">
-    <div class="eyebrow r" style="--d:0"><b>1.1</b><span>Fields · formal definition</span></div>
-    <h2 class="r s" style="--d:1">Field = integral domain + one more axiom.</h2>
-    <div class="def r" style="--d:2"><span class="k">M7 · multiplicative inverse</span><p>For every <span class="math">a ≠ 0</span> in F there is <span class="math">a⁻¹ ∈ F</span> with <span class="math">a·a⁻¹ = a⁻¹·a = 1</span>.<br>Division is then defined as <span class="math">a / b = a · b⁻¹</span>.</p></div>
-    <div class="half grow">
-      <div class="col gap16 r" style="--d:3"><span class="tag yes" style="align-self:flex-start">Fields</span>
-        <ul class="list"><li><b>ℚ</b> rational numbers: inverse of 3/4 is 4/3</li><li><b>ℝ</b> real numbers, <b>ℂ</b> complex numbers</li><li><b>ℤₚ</b>, p prime, e.g. ℤ₇: inverse of 3 is 5 because 3·5 = 15 ≡ 1</li></ul></div>
-      <div class="col gap16 r" style="--d:4"><span class="tag" style="align-self:flex-start">Not fields</span>
-        <ul class="list"><li><b>ℤ</b>: 2 has no integer inverse</li><li><b>ℤ₁₂</b>, any ℤₙ with n not prime: 4 has no inverse mod 12</li><li><b>2×2 matrices</b>: not commutative, and some have no inverse</li></ul></div>
-    </div>
-  </div>
+<!-- ===== 16 · What is a field? ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="What is a field?">
+<!-- NOTES: This is the most important idea in unit 1.1. -->
+  <div class="kick r" style="--d:0">1.1</div><h2 class="r" style="--d:1">What is a field?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>A set where you can add, subtract, multiply and divide (but never by 0).</p></div><div class="mid"><div class="two"><ul class="points r" style="--d:3"><li>Every non-zero number needs a multiplicative inverse</li><li>Example: 3 × ⅓ = 1, so ⅓ is the inverse of 3</li></ul><div class="example r" style="--d:4"><span class="lab">Example</span><pre>Fractions:
+3/4 ÷ 2/5
+= 3/4 × 5/2
+= 15/8  (still a fraction ✓)</pre></div></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Field = all four operations work.</p></div>
 </section>
 
-<!-- ======================= 1.1 AXIOM SUMMARY ======================= -->
-<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Summary table of axioms">
-<!-- NOTES:
-• This one table summarises all of unit 1.1. Students should be able to reproduce it in the exam.
-• Read across a row to see which structures need that axiom; read down a column to see a structure's full definition.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.1</b><span>Revision table</span></div>
-    <h2 class="r s" style="--d:1">All of 1.1 in one table.</h2>
-    <table class="tbl r" style="--d:2;width:100%;font-size:19px">
-      <tr><th style="text-align:left">Axiom</th><th style="text-align:left">Statement</th><th>Group</th><th>Abelian group</th><th>Ring</th><th>Comm. ring</th><th>Integral domain</th><th>Field</th></tr>
-      <tr><td>A1</td><td style="text-align:left">Closure under +</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
-      <tr><td>A2</td><td style="text-align:left">Associative +</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
-      <tr><td>A3</td><td style="text-align:left">Identity 0</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
-      <tr><td>A4</td><td style="text-align:left">Inverse −a</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
-      <tr><td>A5</td><td style="text-align:left">Commutative +</td><td class="no">○</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
-      <tr><td>M1</td><td style="text-align:left">Closure under ×</td><td class="no">○</td><td class="no">○</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
-      <tr><td>M2</td><td style="text-align:left">Associative ×</td><td class="no">○</td><td class="no">○</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
-      <tr><td>M3</td><td style="text-align:left">Distributive</td><td class="no">○</td><td class="no">○</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
-      <tr><td>M4</td><td style="text-align:left">Commutative ×</td><td class="no">○</td><td class="no">○</td><td class="no">○</td><td class="yes">●</td><td class="yes">●</td><td class="yes">●</td></tr>
-      <tr><td>M5</td><td style="text-align:left">Identity 1</td><td class="no">○</td><td class="no">○</td><td class="no">○</td><td class="no">○</td><td class="yes">●</td><td class="yes">●</td></tr>
-      <tr><td>M6</td><td style="text-align:left">No zero divisors</td><td class="no">○</td><td class="no">○</td><td class="no">○</td><td class="no">○</td><td class="yes">●</td><td class="yes">●</td></tr>
-      <tr><td>M7</td><td style="text-align:left">Inverse a⁻¹ (a ≠ 0)</td><td class="no">○</td><td class="no">○</td><td class="no">○</td><td class="no">○</td><td class="no">○</td><td class="yes">●</td></tr>
-    </table>
-    <p class="hint r" style="--d:3">For a group the single operation is written •; A1–A4 apply to it.</p>
-  </div>
+<!-- ===== 17 · Field or not? ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Field or not?">
+<!-- NOTES: Ask: why is the 7-hour clock a field but the 12-hour clock is not? Answer comes in unit 1.3: 7 is prime. -->
+  <div class="kick r" style="--d:0">1.1</div><h2 class="r" style="--d:1">Field or not?</h2>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>System</th><th>Field?</th><th>Why</th></tr>
+  <tr><td><b>ℚ  fractions</b></td><td class="yes">Yes</td><td>Every non-zero fraction has an inverse</td></tr>
+  <tr><td><b>ℝ  real numbers</b></td><td class="yes">Yes</td><td>Inverse of x is 1/x</td></tr>
+  <tr><td><b>ℂ  complex numbers</b></td><td class="yes">Yes</td><td>Every non-zero number has an inverse</td></tr>
+  <tr><td><b>ℤ  integers</b></td><td class="no">No</td><td>2 has no integer inverse</td></tr>
+  <tr><td><b>ℤ₇  7-hour clock</b></td><td class="yes">Yes</td><td>Every non-zero number has an inverse</td></tr>
+  <tr><td><b>ℤ₁₂  12-hour clock</b></td><td class="no">No</td><td>4 has no inverse mod 12</td></tr></table></div>
+  
 </section>
 
-<!-- ======================= 1.1 KEY POINTS ======================= -->
-<section class="slide inv" data-unit="1.1 Groups, rings, fields" data-title="Key points: unit 1.1">
-<!-- NOTES:
-• Quick oral quiz: point at a student, name a structure, ask for its axioms.
--->
-  <div class="col fill gap32">
-    <div class="eyebrow r" style="--d:0"><b>1.1</b><span>Key points to remember</span></div>
-    <h2 class="r s" style="--d:1">Unit 1.1 in six lines.</h2>
-    <div class="kp">
-      <div class="r" style="--d:2"><span class="num">1</span><p><b>Group</b>: closure, associative, identity, inverse (A1–A4).</p></div>
-      <div class="r" style="--d:3"><span class="num">2</span><p><b>Abelian</b>: also commutative (A5). Rubik’s cube moves are not abelian.</p></div>
-      <div class="r" style="--d:4"><span class="num">3</span><p><b>Cyclic</b>: every element is a power of one generator. Cyclic ⇒ abelian.</p></div>
-      <div class="r" style="--d:5"><span class="num">4</span><p><b>Ring</b>: abelian group under +, with × closed, associative and distributive (M1–M3).</p></div>
-      <div class="r" style="--d:6"><span class="num">5</span><p><b>Integral domain</b>: commutative ring with 1 and no zero divisors (ℤ).</p></div>
-      <div class="r" style="--d:7"><span class="num">6</span><p><b>Field</b>: every non-zero element has a multiplicative inverse (M7). ℚ, ℝ, ℤₚ.</p></div>
-    </div>
-  </div>
+<!-- ===== 18 · Group → Ring → Field ===== -->
+<section class="slide" data-unit="1.1 Groups, rings, fields" data-title="Group → Ring → Field">
+<!-- NOTES: Each step adds more rules. -->
+  <div class="kick r" style="--d:0">1.1 summary</div><h2 class="r" style="--d:1">Group → Ring → Field</h2>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>Group: one operation, with undo</code></li><li class="r" style="--d:4"><span class="n">2</span><code>Ring: + and ×</code></li><li class="r" style="--d:5"><span class="n">3</span><code>Field: + − × ÷  (not ÷ 0)</code></li></ol>
+  <div class="result r" style="--d:6"><p>Ciphers use fields, because decryption must undo multiplication. AES uses GF(2⁸).</p></div>
 </section>
 
-<!-- ======================= 1.2 DIVISIBILITY ======================= -->
-<section class="slide" id="u12" data-unit="1.2 Modular arithmetic" data-title="Divisibility">
-<!-- NOTES:
-• b divides a (b | a) if a = m·b for some integer m. We say b is a divisor of a.
-• Divisors of 24: 1, 2, 3, 4, 6, 8, 12, 24.
-• Properties (useful in proofs; examples in brackets):
-  If a | 1 then a = ±1. If a | b and b | a then a = ±b. Any b ≠ 0 divides 0.
-  If a | b and b | c then a | c (11 | 66, 66 | 198 ⇒ 11 | 198).
-  If b | g and b | h then b | (mg + nh) for any integers m, n.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.2</b><span>Divisibility</span></div>
-    <h2 class="r s" style="--d:1">“b divides a” means no remainder.</h2>
-    <div class="half grow">
-      <div class="col gap24">
-        <div class="def r" style="--d:2"><span class="k">Definition</span><p><span class="math">b | a</span> (read “b divides a”) if <span class="math">a = m·b</span> for some integer m. Then b is a <b>divisor</b> of a.</p></div>
-        <div class="r" style="--d:3"><div class="hint">Example · divisors of 24</div><div class="num" style="font-size:70px">1 2 3 4 6 8 12 24</div></div>
-        <p class="sm muted r" style="--d:4">Real world: 24 hours split evenly into shifts of 1, 2, 3, 4, 6, 8 or 12 hours, never 5.</p>
-      </div>
-      <div class="col gap16">
-        <div class="hint r" style="--d:3">Properties</div>
-        <table class="tbl text r" style="--d:4;width:100%">
-          <tr><td>1</td><td>If a | 1, then a = ±1</td></tr>
-          <tr><td>2</td><td>If a | b and b | a, then a = ±b</td></tr>
-          <tr><td>3</td><td>Any b ≠ 0 divides 0</td></tr>
-          <tr><td>4</td><td>If a | b and b | c, then a | c &nbsp;<span class="muted">(11 | 66, 66 | 198 ⇒ 11 | 198)</span></td></tr>
-          <tr><td>5</td><td>If b | g and b | h, then b | (mg + nh) for any integers m, n</td></tr>
-        </table>
-      </div>
-    </div>
-  </div>
+<!-- ===== 19 · Unit 1.2 ===== -->
+<section class="slide dark sec" data-unit="1.2 Modular arithmetic" data-title="Unit 1.2">
+<!-- NOTES:  -->
+  <div class="secnum r" style="--d:0">1.2</div>
+  <h1 class="r" style="--d:1">Modular Arithmetic</h1>
+  <p class="sub r" style="--d:2">Maths on a clock</p>
 </section>
 
-<!-- ======================= 1.2 DIVISION ALGORITHM ======================= -->
-<section class="slide inv" data-unit="1.2 Modular arithmetic" data-title="Division algorithm and a mod n">
-<!-- NOTES:
-• For any integer a and positive integer n there are unique q and r with a = qn + r, 0 ≤ r < n, and q = ⌊a/n⌋ (floor: round down).
-• r is the remainder, written a mod n. n is the modulus.
-• Negative numbers: the remainder is still between 0 and n−1. −11 = (−2)·7 + 3, so −11 mod 7 = 3, not −4.
-• Calculator tip: for negative a, add n until you land in 0…n−1. −11 + 7 + 7 = 3.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.2</b><span>Division algorithm</span></div>
-    <h2 class="r s" style="--d:1">Every integer = quotient × n + remainder.</h2>
-    <div class="def r" style="--d:2"><span class="k">Division algorithm</span><p>For any integer a and positive integer n there are unique integers q, r with<br><span class="math" style="font-size:32px">a = q·n + r, &nbsp;0 ≤ r &lt; n, &nbsp;q = ⌊a / n⌋</span><br>The remainder r is written <span class="math">a mod n</span>; n is the <b>modulus</b>.</p></div>
-    <div class="half grow">
-      <div class="col gap16 r" style="--d:3"><div class="hint">Positive a</div><div class="num nw" style="font-size:88px">11 = 1·7 + <span class="sig">4</span></div><p class="mono" style="font-size:24px">11 mod 7 = 4</p></div>
-      <div class="col gap16 r" style="--d:4"><div class="hint">Negative a · the remainder is never negative</div><div class="num nw" style="font-size:88px">−11 = (−2)·7 + <span class="sig">3</span></div><p class="mono" style="font-size:24px">−11 mod 7 = 3 &nbsp;<span class="muted">(not −4)</span></p></div>
-    </div>
-  </div>
+<!-- ===== 20 · What is modular arithmetic? ===== -->
+<section class="slide" data-unit="1.2 Modular arithmetic" data-title="What is modular arithmetic?">
+<!-- NOTES: a = the number, n = the modulus (the size of the clock), the answer = the remainder. -->
+  <div class="kick r" style="--d:0">1.2</div><h2 class="r" style="--d:1">What is modular arithmetic?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>Maths with remainders. a mod n = the remainder when a is divided by n.</p></div>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>It is 10 o'clock</code></li><li class="r" style="--d:4"><span class="n">2</span><code>Add 5 hours:  10 + 5 = 15</code></li><li class="r" style="--d:5"><span class="n">3</span><code>A clock has only 12 hours:  15 mod 12 = 3</code></li></ol>
+  <div class="result r" style="--d:6"><p>Answer: 3 o'clock. You already do this every day.</p></div>
 </section>
 
-<!-- ======================= 1.2 CLOCK INTERACTIVE ======================= -->
-<section class="slide" data-unit="1.2 Modular arithmetic" data-title="Try it: clock maths">
-<!-- NOTES:
-• 10 o'clock + 5 hours = 15 → 15 mod 12 = 3.
-• Try a = 100, n = 7 (= 2). Try a = −1, n = 12 (= 11).
-• The modulus n is the number of hours on the clock.
--->
-  <div class="split">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>1.2</b><span>Interactive</span></div>
-      <h2 class="r" style="--d:1;font-size:84px">Modular arithmetic is clock maths.</h2>
-      <div class="col gap16 r" style="--d:2">
-        <div class="math" style="font-size:34px">a mod n = remainder of a ÷ n</div>
-        <p class="muted">10 o’clock + 5 hours = 15 → <span class="math">15 mod 12 = 3</span>.</p>
-      </div>
-      <div class="col gap16 r" style="--d:3">
-        <div class="ctrl">
-          <div class="field"><label for="modA">Number a</label><input id="modA" type="number" value="15"></div>
-          <div class="field"><label for="modN">Clock size n (2–30)</label><input id="modN" type="number" value="12" min="2" max="30"></div>
-        </div>
-        <div id="modOut" class="num" style="font-size:70px"></div>
-      </div>
-    </div>
-    <div class="dial r" style="--d:2;align-self:center;width:620px;height:620px"><svg id="modDial" viewBox="0 0 640 640" aria-label="Clock dial showing a mod n"></svg></div>
-  </div>
+<!-- ===== 21 · Practice: a mod n ===== -->
+<section class="slide" data-unit="1.2 Modular arithmetic" data-title="Practice: a mod n">
+<!-- NOTES: Cover the Answer column and let students work them out. -->
+  <div class="kick r" style="--d:0">1.2</div><h2 class="r" style="--d:1">Practice: a mod n</h2>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>Question</th><th>Working</th><th>Answer</th></tr>
+  <tr><td><b>10 mod 3</b></td><td>10 = 3 × 3 + 1</td><td>1</td></tr>
+  <tr><td><b>15 mod 4</b></td><td>15 = 3 × 4 + 3</td><td>3</td></tr>
+  <tr><td><b>20 mod 6</b></td><td>20 = 3 × 6 + 2</td><td>2</td></tr>
+  <tr><td><b>100 mod 7</b></td><td>100 = 14 × 7 + 2</td><td>2</td></tr>
+  <tr><td><b>25 mod 5</b></td><td>25 = 5 × 5 + 0</td><td>0</td></tr></table></div>
+  <div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Find the biggest multiple of n that fits. What is left over is the answer.</p></div>
 </section>
 
-<!-- ======================= 1.2 CONGRUENCE ======================= -->
-<section class="slide inv" data-unit="1.2 Modular arithmetic" data-title="Congruence modulo n">
-<!-- NOTES:
-• a ≡ b (mod n), read "a is congruent to b modulo n", if a mod n = b mod n.
-• Equivalent test: n | (a − b). 73 − 4 = 69 = 3·23, so 73 ≡ 4 (mod 23). 21 − (−9) = 30, so 21 ≡ −9 (mod 10).
-• Properties: (1) a ≡ b iff n | (a − b); (2) symmetric; (3) transitive. Also reflexive: a ≡ a.
-• Residue classes: mod 4, the integers fall into 4 classes [0], [1], [2], [3]. E.g. [1] = {…, −7, −3, 1, 5, 9, …}.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.2</b><span>Congruence</span></div>
-    <h2 class="r s" style="--d:1">Congruent = same remainder.</h2>
-    <div class="def r" style="--d:2"><span class="k">Definition</span><p><span class="math" style="font-size:30px">a ≡ b (mod n)</span> &nbsp;if &nbsp;<span class="math">a mod n = b mod n</span>. &nbsp;Read: “a is congruent to b modulo n”.</p></div>
-    <div class="half grow">
-      <div class="col gap16">
-        <div class="hint r" style="--d:3">Properties</div>
-        <table class="tbl text r" style="--d:4;width:100%">
-          <tr><td>1</td><td>a ≡ b (mod n) &nbsp;⇔&nbsp; n | (a − b)</td></tr>
-          <tr><td>2</td><td>a ≡ b ⇒ b ≡ a &nbsp;<span class="muted">(symmetric)</span></td></tr>
-          <tr><td>3</td><td>a ≡ b and b ≡ c ⇒ a ≡ c &nbsp;<span class="muted">(transitive)</span></td></tr>
-        </table>
-      </div>
-      <div class="col gap16">
-        <div class="hint r" style="--d:3">Examples</div>
-        <div class="steps r" style="--d:4">
-          <div class="st"><span>✓</span><span>73 ≡ 4 (mod 23): 73 − 4 = 69 = 3·23</span></div>
-          <div class="st"><span>✓</span><span>21 ≡ −9 (mod 10): 21 + 9 = 30</span></div>
-          <div class="st"><span>✓</span><span>38 ≡ 14 (mod 12): both leave 2</span></div>
-        </div>
-        <p class="sm muted r" style="--d:5">Residue classes mod 4: every integer falls in [0], [1], [2] or [3]. e.g. [1] = {…, −7, −3, 1, 5, 9, …}</p>
-      </div>
-    </div>
-  </div>
+<!-- ===== 22 · Negative numbers ===== -->
+<section class="slide" data-unit="1.2 Modular arithmetic" data-title="Negative numbers">
+<!-- NOTES: This is a very common exam mistake. -->
+  <div class="kick r" style="--d:0">1.2 · exam tip</div><h2 class="r" style="--d:1">Negative numbers</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>The remainder is always between 0 and n − 1. It is never negative.</p></div>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>Find −11 mod 7</code></li><li class="r" style="--d:4"><span class="n">2</span><code>Write −11 = (−2) × 7 + 3</code></li><li class="r" style="--d:5"><span class="n">3</span><code>Or keep adding 7:  −11 → −4 → 3</code></li></ol>
+  <div class="result r" style="--d:6"><p>−11 mod 7 = 3  (not −4)</p></div>
 </section>
 
-<!-- ======================= 1.2 RULES + SHRINK FIRST ======================= -->
-<section class="slide" data-unit="1.2 Modular arithmetic" data-title="Arithmetic rules: reduce first">
-<!-- NOTES:
-• The three rules let us reduce at any step without changing the final remainder.
-• Worked example: (1234 × 5678) mod 9. Shortcut for mod 9: digit sum. 1234 → 1, 5678 → 8. 1 × 8 = 8. Check: 1234 × 5678 = 7,006,652; digit sum 26 → 8. ✓
-• Real world: RSA multiplies numbers hundreds of digits long; computers reduce mod n after every step so the numbers never explode.
--->
-  <div class="split">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>1.2</b><span>Modular arithmetic rules</span></div>
-      <h2 class="r" style="--d:1;font-size:80px">Shrink first, multiply later.</h2>
-      <div class="col gap8 r" style="--d:2">
-        <div class="math" style="font-size:22px">1. [(a mod n) + (b mod n)] mod n = (a + b) mod n</div>
-        <div class="math" style="font-size:22px">2. [(a mod n) − (b mod n)] mod n = (a − b) mod n</div>
-        <div class="math" style="font-size:22px">3. [(a mod n) × (b mod n)] mod n = (a × b) mod n</div>
-      </div>
-      <p class="take r" style="--d:3;font-size:30px">RSA does this with 600-digit numbers. It never computes the giant product.</p>
-    </div>
-    <div class="col gap16 center">
-      <div class="hint r" style="--d:2">Worked example</div>
-      <div class="num r nw" style="--d:3;font-size:76px">(1234 × 5678) mod 9</div>
-      <div class="steps r" style="--d:4">
-        <div class="st"><span>1</span><span>1234 mod 9 = <b class="cob">1</b></span></div>
-        <div class="st"><span>2</span><span>5678 mod 9 = <b class="cob">8</b></span></div>
-        <div class="st"><span>3</span><span>(1 × 8) mod 9 = <b class="hl">8</b></span></div>
-        <div class="st"><span>✓</span><span class="muted">7,006,652 mod 9 = 8</span></div>
-      </div>
-      <p class="sm muted r" style="--d:5">Also: (11 + 15) mod 8 = (3 + 7) mod 8 = 2</p>
-    </div>
-  </div>
+<!-- ===== 23 · What is divisibility? ===== -->
+<section class="slide" data-unit="1.2 Modular arithmetic" data-title="What is divisibility?">
+<!-- NOTES: Real life: 24 hours can be split evenly into 1, 2, 3, 4, 6, 8 or 12 hour shifts. -->
+  <div class="kick r" style="--d:0">1.2</div><h2 class="r" style="--d:1">What is divisibility?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>b | a means 'b divides a' with no remainder.</p></div><div class="mid"><div class="example r" style="--d:3"><span class="lab">Example</span><pre>6 | 24, because 24 = 6 × 4
+5 does not divide 24
+Divisors of 24:
+1, 2, 3, 4, 6, 8, 12, 24</pre></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>The symbol | means 'divides'. It is not division.</p></div>
 </section>
 
-<!-- ======================= 1.2 MODULAR EXPONENTIATION ======================= -->
-<section class="slide inv" data-unit="1.2 Modular arithmetic" data-title="Modular exponentiation">
-<!-- NOTES:
-• Compute 11⁷ mod 13 without computing 11⁷ = 19,487,171.
-• Square repeatedly and reduce each time: 11² = 121 ≡ 4; 11⁴ ≡ 4² = 16 ≡ 3.
-• 7 = 4 + 2 + 1, so 11⁷ = 11⁴ · 11² · 11 ≡ 3 · 4 · 11 = 132 ≡ 2 (mod 13).
-• Real world: RSA encryption is c = mᵉ mod n; exactly this square-and-multiply idea makes it fast.
--->
-  <div class="split">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>1.2</b><span>Powers mod n</span></div>
-      <h2 class="r" style="--d:1;font-size:84px">Big powers, small numbers.</h2>
-      <p class="r" style="--d:2">To find a large power mod n, square repeatedly and reduce after every step. The numbers never grow beyond n².</p>
-      <p class="take r" style="--d:3;font-size:30px">RSA encrypts with c = mᵉ mod n, using exactly this trick.</p>
-    </div>
-    <div class="col gap16 center">
-      <div class="num sig r nw" style="--d:2;font-size:110px">11⁷ mod 13</div>
-      <div class="steps r" style="--d:3">
-        <div class="st"><span>1</span><span>11² = 121 = 9·13 + 4 → <b class="cob">4</b></span></div>
-        <div class="st"><span>2</span><span>11⁴ = (11²)² ≡ 4² = 16 → <b class="cob">3</b></span></div>
-        <div class="st"><span>3</span><span>7 = 4 + 2 + 1, so 11⁷ = 11⁴·11²·11</span></div>
-        <div class="st"><span>4</span><span>≡ 3 · 4 · 11 = 132 = 10·13 + 2</span></div>
-        <div class="st"><span>=</span><span>11⁷ mod 13 = <b class="hl">2</b></span></div>
-      </div>
-    </div>
-  </div>
+<!-- ===== 24 · The division algorithm ===== -->
+<section class="slide" data-unit="1.2 Modular arithmetic" data-title="The division algorithm">
+<!-- NOTES: This is the same long division students learned in school. -->
+  <div class="kick r" style="--d:0">1.2</div><h2 class="r" style="--d:1">The division algorithm</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>Any number a can be written as  a = q × n + r,  where 0 ≤ r &lt; n.</p></div><div class="mid"><div class="two"><ul class="points r" style="--d:3"><li>a = the number being divided</li><li>n = the divisor</li><li>q = the quotient</li><li>r = the remainder  (r = a mod n)</li></ul><div class="example r" style="--d:4"><span class="lab">Example</span><pre>17 = 2 × 7 + 3
+
+q = 2, r = 3
+so 17 mod 7 = 3</pre></div></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>The remainder r is always smaller than n.</p></div>
 </section>
 
-<!-- ======================= 1.2 Zn TABLES ======================= -->
-<section class="slide" data-unit="1.2 Modular arithmetic" data-title="ℤₙ: arithmetic mod 8">
-<!-- NOTES:
-• ℤₙ = {0, 1, …, n−1}, the set of residues mod n. Here n = 8.
-• Addition table: every row contains a 0, so every number has an ADDITIVE inverse (−3 ≡ 5, since 3 + 5 = 8 ≡ 0).
-• Multiplication table: highlighted 1s show multiplicative inverses. Only 1, 3, 5, 7 have one (each is its own inverse!). 2, 4, 6 share a factor with 8 → no inverse.
-• Conclusion: ℤ₈ is a commutative ring, not a field.
--->
-  <div class="col fill gap16">
-    <div class="eyebrow r" style="--d:0"><b>1.2</b><span>ℤₙ = {0, 1, …, n−1}</span></div>
-    <h2 class="r s" style="--d:1">Arithmetic in ℤ₈.</h2>
-    <div class="row gap48 grow" style="align-items:flex-start">
-      <div class="col gap8 r" style="--d:2"><div class="hint">Addition mod 8 · every row has a 0</div><table class="tbl" data-op="add" data-n="8" data-hl="0" style="font-size:21px"></table></div>
-      <div class="col gap8 r" style="--d:3"><div class="hint">Multiplication mod 8 · highlighted 1 = inverse</div><table class="tbl" data-op="mul" data-n="8" data-hl="1" style="font-size:21px"></table></div>
-      <div class="col gap16 r" style="--d:4;max-width:330px">
-        <div class="def"><span class="k">Additive inverse</span><p class="sm">Every w has one: −3 ≡ 5, since 3 + 5 ≡ 0.</p></div>
-        <div class="def"><span class="k">Multiplicative inverse</span><p class="sm">Only 1, 3, 5, 7 have one. 2, 4, 6 share a factor with 8.</p></div>
-        <p class="sm"><b class="sig">ℤ₈ is a commutative ring, not a field.</b></p>
-      </div>
-    </div>
-  </div>
+<!-- ===== 25 · What is congruence? ===== -->
+<section class="slide" data-unit="1.2 Modular arithmetic" data-title="What is congruence?">
+<!-- NOTES: Two ways to check: same remainder, or n divides the difference. -->
+  <div class="kick r" style="--d:0">1.2</div><h2 class="r" style="--d:1">What is congruence?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>a ≡ b (mod n) means a and b leave the same remainder when divided by n.</p></div><div class="mid"><div class="example r" style="--d:3"><span class="lab">Example</span><pre>38 ≡ 14 (mod 12)
+38 → remainder 2
+14 → remainder 2
+Quick check: 38 − 14 = 24,
+and 12 divides 24 ✓</pre></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>≡ is read 'is congruent to'.</p></div>
 </section>
 
-<!-- ======================= 1.2 PROPERTIES OF Zn ======================= -->
-<section class="slide inv" data-unit="1.2 Modular arithmetic" data-title="Properties of ℤₙ">
-<!-- NOTES:
-• ℤₙ under + and × mod n satisfies commutative, associative, distributive, identity and additive-inverse laws: it is a commutative ring.
-• Cancellation: if (a + b) ≡ (a + c) then b ≡ c always.
-• But (a × b) ≡ (a × c) ⇒ b ≡ c ONLY if a is relatively prime to n.
-• Counter-example: 6 × 3 = 18 ≡ 2 and 6 × 7 = 42 ≡ 2 (mod 8), but 3 ≢ 7. 6 and 8 share the factor 2.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.2</b><span>Properties</span></div>
-    <h2 class="r s" style="--d:1">ℤₙ is a commutative ring.</h2>
-    <div class="half grow">
-      <table class="tbl text r" style="--d:2;width:100%;align-self:start">
-        <tr><th>Property</th><th>Statement (all mod n)</th></tr>
-        <tr><td>Commutative</td><td>w + x = x + w, &nbsp;w × x = x × w</td></tr>
-        <tr><td>Associative</td><td>(w + x) + y = w + (x + y), same for ×</td></tr>
-        <tr><td>Distributive</td><td>w × (x + y) = (w × x) + (w × y)</td></tr>
-        <tr><td>Identities</td><td>0 + w = w, &nbsp;1 × w = w</td></tr>
-        <tr><td>Additive inverse</td><td>for each w there is z with w + z ≡ 0</td></tr>
-      </table>
-      <div class="col gap24">
-        <div class="def r" style="--d:3"><span class="k">Careful · cancelling ×</span><p class="sm">If (a × b) ≡ (a × c) (mod n), then b ≡ c <b>only if gcd(a, n) = 1</b>.</p></div>
-        <div class="r" style="--d:4"><div class="hint">Counter-example, mod 8</div>
-          <div class="steps"><div class="st"><span>×</span><span>6 × 3 = 18 ≡ <b class="hl">2</b></span></div><div class="st"><span>×</span><span>6 × 7 = 42 ≡ <b class="hl">2</b></span></div><div class="st"><span>✗</span><span>but 3 ≢ 7, because gcd(6, 8) = 2</span></div></div></div>
-      </div>
-    </div>
-  </div>
+<!-- ===== 26 · Rules: reduce first ===== -->
+<section class="slide" data-unit="1.2 Modular arithmetic" data-title="Rules: reduce first">
+<!-- NOTES: Check each one the long way too: 15 mod 5 = 0, 5 mod 5 = 0, 56 mod 5 = 1. -->
+  <div class="kick r" style="--d:0">1.2</div><h2 class="r" style="--d:1">Rules: reduce first, then calculate</h2>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>Operation</th><th>Question</th><th>Reduce first</th></tr>
+  <tr><td><b>Add</b></td><td>(8 + 7) mod 5</td><td>(3 + 2) mod 5 = 0</td></tr>
+  <tr><td><b>Subtract</b></td><td>(12 − 7) mod 5</td><td>(2 − 2) mod 5 = 0</td></tr>
+  <tr><td><b>Multiply</b></td><td>(8 × 7) mod 5</td><td>(3 × 2) mod 5 = 1</td></tr></table></div>
+  <div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Small numbers are easier. RSA does this with numbers hundreds of digits long.</p></div>
 </section>
 
-<!-- ======================= 1.2 MOD EVERYWHERE ======================= -->
-<section class="slide" data-unit="1.2 Modular arithmetic" data-title="Mod in the real world">
-<!-- NOTES:
-• Days: Tuesday + 100 days → 100 mod 7 = 2 → Thursday.
-• Caesar: alphabet is a 26-hour clock. X + 3 → A (23 + 3 = 26 ≡ 0).
-• ISBN-10: weighted digit sum ≡ 0 (mod 11); remainder 10 is printed as X.
-• Debit/credit cards: Luhn check, sum ≡ 0 (mod 10).
--->
-  <div class="col fill gap32">
-    <div class="eyebrow r" style="--d:0"><b>1.2</b><span>Real world</span></div>
-    <h2 class="r s" style="--d:1">Mod hides in your calendar, books and cards.</h2>
-    <div class="bento" style="grid-template-columns:1.3fr 1fr 1fr;grid-template-rows:1fr 1fr">
-      <div class="cell sigbg r" style="--d:2;grid-row:span 2">
-        <span class="tag" style="align-self:flex-start">Caesar cipher</span>
-        <div><div class="num" style="font-size:190px">mod 26</div><p style="font-size:23px">The alphabet is a 26-hour clock. Shift X by 3 and you wrap round to A.</p></div>
-      </div>
-      <div class="cell r" style="--d:3"><h3>Calendar · mod 7</h3><p>Tuesday + 100 days? <span class="math">100 mod 7 = 2</span> → Thursday.</p></div>
-      <div class="cell r" style="--d:4"><h3>Books · mod 11</h3><p>ISBN-10 digits must sum (weighted) to <span class="math">0 mod 11</span>. Remainder 10 prints as “X”.</p></div>
-      <div class="cell cobbg r" style="--d:5;grid-column:span 2"><h3>Debit cards · mod 10</h3><p>The Luhn check makes a digit sum ≡ 0 mod 10. Mistype one digit and the payment form rejects it instantly.</p></div>
-    </div>
-  </div>
+<!-- ===== 27 · Powers: 11⁷ mod 13 ===== -->
+<section class="slide" data-unit="1.2 Modular arithmetic" data-title="Powers: 11⁷ mod 13">
+<!-- NOTES: 11⁷ is 19,487,171. We never need to calculate it. -->
+  <div class="kick r" style="--d:0">1.2</div><h2 class="r" style="--d:1">Big powers: 11⁷ mod 13</h2>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>11² = 121 ≡ 4  (mod 13)</code></li><li class="r" style="--d:4"><span class="n">2</span><code>11⁴ = 4² = 16 ≡ 3</code></li><li class="r" style="--d:5"><span class="n">3</span><code>7 = 4 + 2 + 1,  so 11⁷ = 11⁴ × 11² × 11</code></li><li class="r" style="--d:6"><span class="n">4</span><code>≡ 3 × 4 × 11 = 132</code></li><li class="r" style="--d:7"><span class="n">5</span><code>132 mod 13 = 2</code></li></ol>
+  <div class="result r" style="--d:8"><p>Answer: 2. This trick is called square-and-multiply.</p></div>
 </section>
 
-<!-- ======================= 1.2 INVERSES ======================= -->
-<section class="slide inv" data-unit="1.2 Modular arithmetic" data-title="Division means multiply by the inverse">
-<!-- NOTES:
-• No "÷" in mod world. Multiply by the INVERSE: a⁻¹ with a × a⁻¹ ≡ 1 (mod n).
-• Mod 7: 3 × 5 = 15 ≡ 1, so 3⁻¹ = 5.
-• Mod 12: multiples of 4 are 0, 4, 8, … never 1.
-• Rule: a has an inverse mod n exactly when gcd(a, n) = 1. Next unit: computing gcd fast.
--->
-  <div class="col fill gap48">
-    <div class="eyebrow r" style="--d:0"><b>1.2 → 1.3</b><span>Multiplicative inverse</span></div>
-    <h2 class="r" style="--d:1;font-size:84px">In mod world, divide by multiplying.</h2>
-    <div class="row gap48 grow">
-      <div class="col gap16" style="flex:1">
-        <span class="tag sig r" style="--d:2;align-self:flex-start">mod 7 · inverse exists</span>
-        <div class="num r nw" style="--d:3;font-size:140px">3 × <span class="sig">5</span> ≡ 1</div>
-        <p class="muted r" style="--d:4">15 = 2·7 + 1. So 3⁻¹ = 5: “divide by 3” means “multiply by 5”.</p>
-      </div>
-      <div class="col gap16" style="flex:1;border-left:1px solid #2A2E37;padding-left:48px">
-        <span class="tag r" style="--d:3;align-self:flex-start;color:#9AA1AE">mod 12 · no inverse</span>
-        <div class="num r nw" style="--d:4;font-size:140px;color:#7E93FF">4 × ? ≢ 1</div>
-        <p class="muted r" style="--d:5">4, 8, 0, 4, 8, 0 … the 1 never comes.</p>
-      </div>
-    </div>
-    <p class="take r" style="--d:6">a has an inverse mod n only when gcd(a, n) = 1.</p>
-  </div>
+<!-- ===== 28 · What is ℤₙ? ===== -->
+<section class="slide" data-unit="1.2 Modular arithmetic" data-title="What is ℤₙ?">
+<!-- NOTES: ℤ₁₂ is the 12-hour clock; ℤ₇ is a 7-hour clock. -->
+  <div class="kick r" style="--d:0">1.2</div><h2 class="r" style="--d:1">What is ℤₙ?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>ℤₙ = {0, 1, 2, …, n − 1}. Every answer is reduced mod n.</p></div><div class="mid"><div class="example r" style="--d:3"><span class="lab">Example</span><pre>ℤ₈ = {0, 1, 2, 3, 4, 5, 6, 7}
+6 + 5 = 11 ≡ 3
+4 × 3 = 12 ≡ 4</pre></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>ℤₙ is just the clock with n hours.</p></div>
 </section>
 
-<!-- ======================= 1.2 KEY POINTS ======================= -->
-<section class="slide" data-unit="1.2 Modular arithmetic" data-title="Key points: unit 1.2">
-<!-- NOTES:
-• Quick check: −11 mod 7? (3). Is 73 ≡ 4 mod 23? (yes). Which elements of ℤ₈ have inverses? (1,3,5,7).
--->
-  <div class="col fill gap32">
-    <div class="eyebrow r" style="--d:0"><b>1.2</b><span>Key points to remember</span></div>
-    <h2 class="r s" style="--d:1">Unit 1.2 in six lines.</h2>
-    <div class="kp">
-      <div class="r" style="--d:2"><span class="num">1</span><p><b>b | a</b> if a = m·b. Divisibility is transitive.</p></div>
-      <div class="r" style="--d:3"><span class="num">2</span><p><b>a = qn + r</b>, 0 ≤ r &lt; n. r = a mod n is never negative.</p></div>
-      <div class="r" style="--d:4"><span class="num">3</span><p><b>a ≡ b (mod n)</b> ⇔ same remainder ⇔ n | (a − b).</p></div>
-      <div class="r" style="--d:5"><span class="num">4</span><p>Reduce mod n at any step of +, −, ×. Use repeated squaring for powers.</p></div>
-      <div class="r" style="--d:6"><span class="num">5</span><p><b>ℤₙ</b> is a commutative ring. Every element has an additive inverse.</p></div>
-      <div class="r" style="--d:7"><span class="num">6</span><p>a has a multiplicative inverse mod n ⇔ <b>gcd(a, n) = 1</b>.</p></div>
-    </div>
-  </div>
+<!-- ===== 29 · Inverses in ℤ₈ ===== -->
+<section class="slide" data-unit="1.2 Modular arithmetic" data-title="Inverses in ℤ₈">
+<!-- NOTES: Try 2 × every number mod 8: you only get even answers, never 1. -->
+  <div class="kick r" style="--d:0">1.2</div><h2 class="r" style="--d:1">Two kinds of inverse in ℤ₈</h2>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>Inverse</th><th>Meaning</th><th>In ℤ₈</th></tr>
+  <tr><td><b>Additive</b></td><td>Gives 0 when added</td><td>Every number has one:  3 + 5 = 8 ≡ 0</td></tr>
+  <tr><td><b>Multiplicative</b></td><td>Gives 1 when multiplied</td><td>Only 1, 3, 5, 7 have one.  2, 4, 6 don't.</td></tr></table></div>
+  <div class="remember r" style="--d:5"><span class="lab">Remember</span><p>So ℤ₈ is not a field.</p></div>
 </section>
 
-<!-- ======================= 1.3 GCD ======================= -->
-<section class="slide inv" id="u13" data-unit="1.3 Euclid & GF(p)" data-title="Greatest common divisor">
-<!-- NOTES:
-• gcd(a, b) = the largest positive integer that divides both a and b. gcd(0, 0) = 0, gcd(a, 0) = |a|.
-• gcd(60, 24) = 12. 60 = 2²·3·5, 24 = 2³·3 → common part 2²·3 = 12.
-• a and b are RELATIVELY PRIME (coprime) if gcd(a, b) = 1. 8 and 15 are relatively prime though neither is prime.
-• Factorising works for small numbers but is hopelessly slow for 300-digit numbers. Euclid's algorithm never factorises; that's why we use it.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.3</b><span>GCD</span></div>
-    <h2 class="r s" style="--d:1">The biggest number that divides both.</h2>
-    <div class="def r" style="--d:2"><span class="k">Definitions</span><p class="sm"><span class="math">gcd(a, b)</span> is the largest positive integer dividing both a and b. &nbsp;gcd(a, 0) = |a|.<br>a and b are <b>relatively prime</b> if <span class="math">gcd(a, b) = 1</span>.</p></div>
-    <div class="half grow">
-      <div class="col gap16 r" style="--d:3"><div class="hint">By prime factors</div>
-        <div class="steps"><div class="st"><span>60</span><span>= 2² · 3 · 5</span></div><div class="st"><span>24</span><span>= 2³ · 3</span></div><div class="st"><span>gcd</span><span>= 2² · 3 = <b class="hl">12</b></span></div></div></div>
-      <div class="col gap16 r" style="--d:4"><div class="hint">Relatively prime</div>
-        <div class="num nw" style="font-size:96px">gcd(8, 15) = <span class="sig">1</span></div>
-        <p class="sm muted">Neither 8 nor 15 is prime, yet they share no factor.</p>
-        <p class="sm">Factoring a 300-digit number is practically impossible. Euclid’s method finds the gcd without factoring.</p></div>
-    </div>
-  </div>
+<!-- ===== 30 · Multiplicative inverse ===== -->
+<section class="slide" data-unit="1.2 Modular arithmetic" data-title="Multiplicative inverse">
+<!-- NOTES: In mod world we never divide. We multiply by the inverse instead. -->
+  <div class="kick r" style="--d:0">1.2</div><h2 class="r" style="--d:1">What is a multiplicative inverse?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>a⁻¹ is the number that gives 1 when multiplied by a (mod n).</p></div><div class="mid"><div class="example r" style="--d:3"><span class="lab">Example</span><pre>3 × 5 = 15
+15 mod 7 = 1
+so 3⁻¹ mod 7 = 5</pre></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>a has an inverse mod n only if gcd(a, n) = 1.</p></div>
 </section>
 
-<!-- ======================= 1.3 EUCLID INTERACTIVE ======================= -->
-<section class="slide" data-unit="1.3 Euclid & GF(p)" data-title="Try it: Euclid's algorithm">
-<!-- NOTES:
-• Euclid described this around 300 BC; your phone still runs it.
-• Floor picture: a 1071 cm × 462 cm floor. Biggest square tile that fits exactly = gcd = 21 cm.
-• 1071 = 2·462 + 147; 462 = 3·147 + 21; 147 = 7·21 + 0 → gcd 21.
-• Let students try (84, 36) → 12 and (17, 5) → 1.
--->
-  <div class="split">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>1.3</b><span>Euclidean algorithm</span></div>
-      <div class="col gap24">
-        <div class="num sig r" style="--d:1;font-size:170px">300 BC</div>
-        <h2 class="r" style="--d:2;font-size:72px">Euclid’s trick still runs in your phone.</h2>
-      </div>
-      <div class="col gap16 r" style="--d:3">
-        <div class="math" style="font-size:30px">gcd(a, b) = gcd(b, a mod b)</div>
-        <p class="muted" style="font-size:22px">Picture a 1071 × 462 cm floor. The biggest square tile that fits exactly is the gcd.</p>
-      </div>
-    </div>
-    <div class="col gap24 center">
-      <div class="ctrl r" style="--d:2">
-        <div class="field"><label for="eA">a</label><input id="eA" type="number" value="1071" min="1"></div>
-        <div class="field"><label for="eB">b</label><input id="eB" type="number" value="462" min="1"></div>
-      </div>
-      <div id="eSteps" class="steps r" style="--d:3"></div>
-      <div id="eOut" class="num r" style="--d:4;font-size:80px"></div>
-    </div>
-  </div>
+<!-- ===== 31 · Unit 1.3 ===== -->
+<section class="slide dark sec" data-unit="1.3 Euclid &amp; GF(p)" data-title="Unit 1.3">
+<!-- NOTES:  -->
+  <div class="secnum r" style="--d:0">1.3</div>
+  <h1 class="r" style="--d:1">Euclidean Algorithm and GF(p)</h1>
+  <p class="sub r" style="--d:2">Finding GCDs and inverses</p>
 </section>
 
-<!-- ======================= 1.3 EUCLID FORMAL ======================= -->
-<section class="slide inv" data-unit="1.3 Euclid & GF(p)" data-title="Euclid's algorithm: theorem and steps">
-<!-- NOTES:
-• Theorem: for any non-negative a and positive b, gcd(a, b) = gcd(b, a mod b).
-• Why: a = qb + r, so any common divisor of a and b also divides r = a − qb, and vice versa. The pair (b, r) has the same common divisors.
-• Repeat until the remainder is 0. The last non-zero remainder is the gcd.
-• Textbook example (Stallings): gcd(1970, 1066) = 2, takes 11 divisions.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.3</b><span>Euclidean algorithm · formal</span></div>
-    <h2 class="r s" style="--d:1">Keep dividing. The last non-zero remainder wins.</h2>
-    <div class="half grow" style="grid-template-columns:.9fr 1.1fr">
-      <div class="col gap16">
-        <div class="def r" style="--d:2"><span class="k">Theorem</span><p class="sm"><span class="math">gcd(a, b) = gcd(b, a mod b)</span><br>Since a = qb + r, any number dividing a and b also divides r = a − qb, and the other way round.</p></div>
-        <pre class="code r" style="--d:3">Euclid(a, b):        // a ≥ b ≥ 0
-  while b ≠ 0:
-      r ← a mod b
-      a ← b
-      b ← r
-  return a           // = gcd</pre>
-      </div>
-      <div class="col gap8 r" style="--d:3"><div class="hint">Worked example · gcd(1970, 1066)</div>
-        <div class="row gap32">
-          <div class="steps sm" style="flex:1">
-            <div class="st"><span>1</span><span>1970 = 1·1066 + 904</span></div><div class="st"><span>2</span><span>1066 = 1·904 + 162</span></div><div class="st"><span>3</span><span>904 = 5·162 + 94</span></div><div class="st"><span>4</span><span>162 = 1·94 + 68</span></div><div class="st"><span>5</span><span>94 = 1·68 + 26</span></div><div class="st"><span>6</span><span>68 = 2·26 + 16</span></div>
-          </div>
-          <div class="steps sm" style="flex:1">
-            <div class="st"><span>7</span><span>26 = 1·16 + 10</span></div><div class="st"><span>8</span><span>16 = 1·10 + 6</span></div><div class="st"><span>9</span><span>10 = 1·6 + 4</span></div><div class="st"><span>10</span><span>6 = 1·4 + <b class="hl">2</b></span></div><div class="st"><span>11</span><span>4 = 2·2 + 0</span></div><div class="st"><span>=</span><span>gcd = <b class="hl">2</b></span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+<!-- ===== 32 · What is GCD? ===== -->
+<section class="slide" data-unit="1.3 Euclid &amp; GF(p)" data-title="What is GCD?">
+<!-- NOTES: This method is fine for small numbers but slow for big ones. -->
+  <div class="kick r" style="--d:0">1.3</div><h2 class="r" style="--d:1">What is GCD?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>Greatest Common Divisor: the biggest number that divides both numbers.</p></div><div class="mid"><div class="example r" style="--d:3"><span class="lab">Example</span><pre>Factors of 60:
+1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60
+Factors of 24:
+1, 2, 3, 4, 6, 8, 12, 24
+Biggest common factor: 12</pre></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>gcd(60, 24) = 12</p></div>
 </section>
 
-<!-- ======================= 1.3 EXTENDED EUCLID CONCEPT ======================= -->
-<section class="slide" data-unit="1.3 Euclid & GF(p)" data-title="Extended Euclidean algorithm">
-<!-- NOTES:
-• Extended Euclid finds integers x, y with ax + by = gcd(a, b) (Bézout's identity).
-• If gcd(a, n) = 1, then ax + ny = 1. Taking mod n: ax ≡ 1 (mod n). So x mod n = a⁻¹.
-• Table method: start with rows (r = a, x = 1, y = 0) and (r = b, x = 0, y = 1). For each new row, q = ⌊previous r ÷ current r⌋, then r, x, y each = (value two rows up) − q × (value one row up).
-• Stop when r = 0. The row just before gives gcd and its x, y.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.3</b><span>Extended Euclidean algorithm</span></div>
-    <h2 class="r s" style="--d:1">Track two extra numbers, get the inverse for free.</h2>
-    <div class="half grow">
-      <div class="col gap16">
-        <div class="def r" style="--d:2"><span class="k">Goal</span><p class="sm">Find integers x, y with <span class="math">a·x + b·y = gcd(a, b)</span>.</p></div>
-        <div class="def r" style="--d:3"><span class="k">Why it gives the inverse</span><p class="sm">If gcd(a, n) = 1 then <span class="math">a·x + n·y = 1</span>. Reduce mod n: <span class="math">a·x ≡ 1</span>, so <span class="math">a⁻¹ = x mod n</span>.</p></div>
-      </div>
-      <div class="col gap16">
-        <div class="hint r" style="--d:3">Table method</div>
-        <ul class="list sm r" style="--d:4">
-          <li>Row −1: r = a, x = 1, y = 0. &nbsp;Row 0: r = b, x = 0, y = 1.</li>
-          <li>Each new row: <span class="math">q = ⌊rᵢ₋₂ / rᵢ₋₁⌋</span></li>
-          <li><span class="math">rᵢ = rᵢ₋₂ − q·rᵢ₋₁</span>, and the same formula for x and y.</li>
-          <li>Stop when r = 0. The row above holds gcd, x and y.</li>
-          <li>Check every row: <span class="math">a·x + b·y = r</span>.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+<!-- ===== 33 · Relatively prime ===== -->
+<section class="slide" data-unit="1.3 Euclid &amp; GF(p)" data-title="Relatively prime">
+<!-- NOTES: Also called coprime. -->
+  <div class="kick r" style="--d:0">1.3</div><h2 class="r" style="--d:1">What are relatively prime numbers?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>Two numbers whose GCD is 1. They share no common factor except 1.</p></div><div class="mid"><div class="example r" style="--d:3"><span class="lab">Example</span><pre>gcd(8, 15) = 1
+8 = 2 × 2 × 2
+15 = 3 × 5
+nothing in common</pre></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>8 and 15 are not prime, but they are relatively prime.</p></div>
 </section>
 
-<!-- ======================= 1.3 EXTENDED TABLE 1759/550 ======================= -->
-<section class="slide inv" data-unit="1.3 Euclid & GF(p)" data-title="Worked example: 550⁻¹ mod 1759">
-<!-- NOTES:
-• Textbook example: find the inverse of 550 mod 1759.
-• Row 1: q = ⌊1759/550⌋ = 3, r = 1759 − 3·550 = 109, x = 1 − 3·0 = 1, y = 0 − 3·1 = −3.
-• Continue until r = 1. Row 4 gives 1759·(−111) + 550·355 = 1.
-• So 550⁻¹ ≡ 355 (mod 1759). Check: 550 × 355 = 195,250 = 111 × 1759 + 1. ✓
--->
-  <div class="split" style="grid-template-columns:1.1fr .9fr">
-    <div class="col gap16">
-      <div class="eyebrow r" style="--d:0"><b>1.3</b><span>Worked example</span></div>
-      <h2 class="r s" style="--d:1">Find 550⁻¹ mod 1759.</h2>
-      <table class="tbl r" style="--d:2;width:100%;font-size:22px">
-        <tr><th>i</th><th>q</th><th>r</th><th>x</th><th>y</th><th>check 1759x + 550y</th></tr>
-        <tr><td>−1</td><td>–</td><td>1759</td><td>1</td><td>0</td><td>1759</td></tr>
-        <tr><td>0</td><td>–</td><td>550</td><td>0</td><td>1</td><td>550</td></tr>
-        <tr><td>1</td><td>3</td><td>109</td><td>1</td><td>−3</td><td>109</td></tr>
-        <tr><td>2</td><td>5</td><td>5</td><td>−5</td><td>16</td><td>5</td></tr>
-        <tr><td>3</td><td>21</td><td>4</td><td>106</td><td>−339</td><td>4</td></tr>
-        <tr><td>4</td><td>1</td><td class="hl">1</td><td>−111</td><td class="hl">355</td><td>1</td></tr>
-        <tr><td>5</td><td>4</td><td>0</td><td>–</td><td>–</td><td>stop</td></tr>
-      </table>
-    </div>
-    <div class="col between">
-      <div></div>
-      <div class="col gap16">
-        <div class="hint r" style="--d:3">Row 4 says</div>
-        <div class="math r" style="--d:4;font-size:26px">1759·(−111) + 550·355 = 1</div>
-        <div class="num sig r nw" style="--d:5;font-size:120px">550⁻¹ ≡ 355</div>
-        <p class="mono r" style="--d:6;font-size:20px;color:#9AA1AE">(mod 1759) · check: 550 × 355 = 195,250 = 111·1759 + 1 ✓</p>
-      </div>
-      <p class="sm muted r" style="--d:7">Row 1: q = ⌊1759/550⌋ = 3; r = 1759 − 3·550 = 109; x = 1 − 3·0 = 1; y = 0 − 3·1 = −3.</p>
-    </div>
-  </div>
+<!-- ===== 34 · Euclidean algorithm ===== -->
+<section class="slide" data-unit="1.3 Euclid &amp; GF(p)" data-title="Euclidean algorithm">
+<!-- NOTES: Euclid wrote this down around 300 BC. Phones still use it today. -->
+  <div class="kick r" style="--d:0">1.3</div><h2 class="r" style="--d:1">The Euclidean algorithm</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>A fast way to find GCD without listing factors:  gcd(a, b) = gcd(b, a mod b).</p></div><div class="mid"><ul class="points r" style="--d:3"><li>1. Divide the big number by the small number</li><li>2. Note the remainder</li><li>3. Replace (big, small) with (small, remainder)</li><li>4. Repeat until the remainder is 0</li></ul></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>The last non-zero remainder is the GCD.</p></div>
 </section>
 
-<!-- ======================= 1.3 EXTENDED 15/26 ======================= -->
-<section class="slide" data-unit="1.3 Euclid & GF(p)" data-title="Worked example: 15⁻¹ mod 26">
-<!-- NOTES:
-• Back-substitution method (alternative to the table): run Euclid, then work upwards.
-  26 = 1·15 + 11 ; 15 = 1·11 + 4 ; 11 = 2·4 + 3 ; 4 = 1·3 + 1
-  1 = 4 − 3 = 4 − (11 − 2·4) = 3·4 − 11 = 3(15 − 11) − 11 = 3·15 − 4·11 = 3·15 − 4(26 − 15) = 7·15 − 4·26
-  So 15⁻¹ ≡ 7 (mod 26). Check 15 × 7 = 105 = 4·26 + 1 ✓
-• Used by the Affine cipher. RSA's private key d = e⁻¹ mod φ(n) is found the same way (Module 4).
--->
-  <div class="split" style="grid-template-columns:.9fr 1.1fr">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>1.3</b><span>Back-substitution method</span></div>
-      <h2 class="r" style="--d:1;font-size:76px">Run Euclid backwards to find the undo button.</h2>
-      <div class="col gap16">
-        <div class="num sig r nw" style="--d:2;font-size:140px">15⁻¹ ≡ 7</div>
-        <p class="mono r" style="--d:3;font-size:20px" >(mod 26) · check: 15 × 7 = 105 = 4·26 + 1</p>
-      </div>
-      <p class="take r" style="--d:4;font-size:28px">RSA builds its private key this way: d = e⁻¹ mod φ(n).</p>
-    </div>
-    <div class="col gap16 center">
-      <div class="hint r" style="--d:2">Forward: divide</div>
-      <div class="steps r" style="--d:3">
-        <div class="st"><span>1</span><span>26 = 1·15 + 11</span></div>
-        <div class="st"><span>2</span><span>15 = 1·11 + 4</span></div>
-        <div class="st"><span>3</span><span>11 = 2·4 + 3</span></div>
-        <div class="st"><span>4</span><span>4 = 1·3 + <b class="hl">1</b></span></div>
-      </div>
-      <div class="hint r" style="--d:4">Backward: substitute each remainder</div>
-      <div class="steps r" style="--d:5;font-size:22px">
-        <div class="st"><span>←</span><span>1 = 4 − 3 = 4 − (11 − 2·4) = 3·4 − 11</span></div>
-        <div class="st"><span>←</span><span>= 3(15 − 11) − 11 = 3·15 − 4·11</span></div>
-        <div class="st"><span>←</span><span>= 3·15 − 4(26 − 15) = <b class="hl">7</b>·15 − 4·26</span></div>
-      </div>
-    </div>
-  </div>
+<!-- ===== 35 · Example: gcd(84, 36) ===== -->
+<section class="slide" data-unit="1.3 Euclid &amp; GF(p)" data-title="Example: gcd(84, 36)">
+<!-- NOTES: The last non-zero remainder is 12. -->
+  <div class="kick r" style="--d:0">1.3 · worked example</div><h2 class="r" style="--d:1">Find gcd(84, 36)</h2>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>84 = 2 × 36 + 12</code></li><li class="r" style="--d:4"><span class="n">2</span><code>36 = 3 × 12 + 0   → stop</code></li></ol>
+  <div class="result r" style="--d:5"><p>GCD = 12</p></div>
 </section>
 
-<!-- ======================= 1.3 GF(p) DEFINITION ======================= -->
-<section class="slide inv" data-unit="1.3 Euclid & GF(p)" data-title="Finite fields of the form GF(p)">
-<!-- NOTES:
-• A finite field has a finite number of elements. Its order (size) must be a prime power pⁿ. GF = Galois Field, after Évariste Galois.
-• GF(p): the set ℤₚ = {0, 1, …, p − 1} with + and × mod p, p prime.
-• Proof idea: every w in 1…p−1 has gcd(w, p) = 1 because p is prime, so by extended Euclid w has an inverse. All field axioms hold.
-• ℤₙ for composite n (like ℤ₈) is only a commutative ring.
-• Simplest field GF(2): + is XOR, × is AND. Computers use this constantly.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.3</b><span>Finite fields GF(p)</span></div>
-    <h2 class="r s" style="--d:1">A clock with a prime number of hours is a field.</h2>
-    <div class="half grow">
-      <div class="col gap16">
-        <div class="def r" style="--d:2"><span class="k">Definition</span><p class="sm">For a prime p, <b>GF(p)</b> is the set <span class="math">ℤₚ = {0, 1, …, p−1}</span> with addition and multiplication mod p. A finite field always has pⁿ elements; GF = Galois field.</p></div>
-        <div class="def r" style="--d:3"><span class="k">Why prime works</span><p class="sm">Every w from 1 to p−1 has gcd(w, p) = 1, so extended Euclid gives w⁻¹. That is axiom M7. For composite n, ℤₙ is only a commutative ring.</p></div>
-      </div>
-      <div class="col gap16">
-        <div class="hint r" style="--d:3">The smallest field · GF(2)</div>
-        <div class="row gap32 r" style="--d:4">
-          <div><div class="hint" style="margin-bottom:6px">+ is XOR</div><table class="tbl" data-op="add" data-n="2"></table></div>
-          <div><div class="hint" style="margin-bottom:6px">× is AND</div><table class="tbl" data-op="mul" data-n="2"></table></div>
-        </div>
-        <p class="sm muted r" style="--d:5">Inverses: additive −0 = 0, −1 = 1; multiplicative 1⁻¹ = 1.</p>
-      </div>
-    </div>
-  </div>
+<!-- ===== 36 · Example: gcd(1071, 462) ===== -->
+<section class="slide" data-unit="1.3 Euclid &amp; GF(p)" data-title="Example: gcd(1071, 462)">
+<!-- NOTES: The tile picture helps students see what the GCD means. -->
+  <div class="kick r" style="--d:0">1.3 · worked example</div><h2 class="r" style="--d:1">Find gcd(1071, 462)</h2>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>1071 = 2 × 462 + 147</code></li><li class="r" style="--d:4"><span class="n">2</span><code>462 = 3 × 147 + 21</code></li><li class="r" style="--d:5"><span class="n">3</span><code>147 = 7 × 21 + 0   → stop</code></li></ol>
+  <div class="result r" style="--d:6"><p>GCD = 21. The biggest square tile for a 1071 × 462 cm floor is 21 cm.</p></div>
 </section>
 
-<!-- ======================= 1.3 GF(7) TABLES ======================= -->
-<section class="slide" data-unit="1.3 Euclid & GF(p)" data-title="Arithmetic in GF(7)">
-<!-- NOTES:
-• Compare with ℤ₈: in GF(7) every row of the multiplication table (except 0) contains exactly one 1. Every non-zero element has an inverse.
-• Inverses: 1↔1, 2↔4, 3↔5, 6↔6. Additive inverses: −w = 7 − w.
-• Each non-zero row is a rearrangement of 1–6: multiplication by a non-zero element just shuffles the elements. That is why it can be undone.
--->
-  <div class="col fill gap16">
-    <div class="eyebrow r" style="--d:0"><b>1.3</b><span>GF(7)</span></div>
-    <h2 class="r s" style="--d:1">In GF(7), every non-zero row hits 1 exactly once.</h2>
-    <div class="row gap48 grow" style="align-items:flex-start">
-      <div class="col gap8 r" style="--d:2"><div class="hint">Addition mod 7</div><table class="tbl" data-op="add" data-n="7" data-hl="0" style="font-size:21px"></table></div>
-      <div class="col gap8 r" style="--d:3"><div class="hint">Multiplication mod 7</div><table class="tbl" data-op="mul" data-n="7" data-hl="1" style="font-size:21px"></table></div>
-      <div class="col gap16 r" style="--d:4">
-        <div class="hint">Inverses in GF(7)</div>
-        <table class="tbl" style="font-size:20px">
-          <tr><th>w</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td></tr>
-          <tr><th>−w</th><td>0</td><td>6</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td></tr>
-          <tr><th>w⁻¹</th><td class="z">–</td><td>1</td><td>4</td><td>5</td><td>2</td><td>3</td><td>6</td></tr>
-        </table>
-        <p class="sm" style="max-width:15em">Each non-zero row is a shuffle of 1–6, so multiplying can always be undone.</p>
-      </div>
-    </div>
-  </div>
+<!-- ===== 37 · Extended Euclidean algorithm ===== -->
+<section class="slide" data-unit="1.3 Euclid &amp; GF(p)" data-title="Extended Euclidean algorithm">
+<!-- NOTES: Two worked slides follow: first divide, then work backwards. -->
+  <div class="kick r" style="--d:0">1.3</div><h2 class="r" style="--d:1">The extended Euclidean algorithm</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>It also finds x and y so that  a·x + b·y = gcd(a, b).</p></div><div class="mid"><ul class="points r" style="--d:3"><li>If gcd(a, n) = 1, then a·x + n·y = 1</li><li>So a·x ≡ 1 (mod n)</li><li>So x is the inverse of a</li></ul></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>This is how RSA finds its private key (Module 4).</p></div>
 </section>
 
-<!-- ======================= 1.3 GF(p) PAIRS + REAL WORLD ======================= -->
-<section class="slide inv" data-unit="1.3 Euclid & GF(p)" data-title="GF(p) in Bitcoin and WhatsApp">
-<!-- NOTES:
-• Hover the tiles: 1↔1, 2↔4, 3↔5, 6↔6.
-• Real world: Bitcoin's curve secp256k1 works in GF(p) with p = 2^256 − 2^32 − 977. WhatsApp's Curve25519 uses p = 2^255 − 19. Same maths as GF(7), just with 77-digit primes.
--->
-  <div class="col fill gap32">
-    <div class="eyebrow r" style="--d:0"><b>1.3</b><span>GF(p) in real systems</span></div>
-    <h2 class="r s" style="--d:1">Same maths as GF(7), with 77-digit primes.</h2>
-    <div class="col gap16 r" style="--d:3">
-      <div class="hint">GF(7): hover or tap a number to see its inverse</div>
-      <div class="pairs" id="pairs"></div>
-    </div>
-    <div class="row gap48 r" style="--d:4;border-top:1px solid #2A2E37;padding-top:22px">
-      <div><div class="hint">Bitcoin · secp256k1</div><div class="math" style="font-size:34px">p = 2²⁵⁶ − 2³² − 977</div></div>
-      <div><div class="hint">WhatsApp · Curve25519</div><div class="math" style="font-size:34px">p = 2²⁵⁵ − 19</div></div>
-    </div>
-  </div>
+<!-- ===== 38 · 15⁻¹ mod 26: step 1 ===== -->
+<section class="slide" data-unit="1.3 Euclid &amp; GF(p)" data-title="15⁻¹ mod 26: step 1">
+<!-- NOTES: Same as normal Euclid. Stop at remainder 1. -->
+  <div class="kick r" style="--d:0">1.3 · worked example</div><h2 class="r" style="--d:1">Find 15⁻¹ mod 26  ·  Step 1: divide</h2>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>26 = 1 × 15 + 11</code></li><li class="r" style="--d:4"><span class="n">2</span><code>15 = 1 × 11 + 4</code></li><li class="r" style="--d:5"><span class="n">3</span><code>11 = 2 × 4 + 3</code></li><li class="r" style="--d:6"><span class="n">4</span><code>4 = 1 × 3 + 1</code></li></ol>
+  <div class="result r" style="--d:7"><p>GCD = 1, so an inverse exists.</p></div>
 </section>
 
-<!-- ======================= 1.3 KEY POINTS ======================= -->
-<section class="slide" data-unit="1.3 Euclid & GF(p)" data-title="Key points: unit 1.3">
-<!-- NOTES:
-• Quick check: gcd(84, 36)? (12). Inverse of 3 mod 11? (4). Why is ℤ₉ not a field? (3 has no inverse; gcd(3,9) = 3).
--->
-  <div class="col fill gap32">
-    <div class="eyebrow r" style="--d:0"><b>1.3</b><span>Key points to remember</span></div>
-    <h2 class="r s" style="--d:1">Unit 1.3 in six lines.</h2>
-    <div class="kp">
-      <div class="r" style="--d:2"><span class="num">1</span><p><b>gcd(a, b)</b>: largest common divisor. Relatively prime ⇔ gcd = 1.</p></div>
-      <div class="r" style="--d:3"><span class="num">2</span><p><b>Euclid</b>: gcd(a, b) = gcd(b, a mod b); last non-zero remainder.</p></div>
-      <div class="r" style="--d:4"><span class="num">3</span><p><b>Extended Euclid</b>: finds x, y with ax + by = gcd(a, b).</p></div>
-      <div class="r" style="--d:5"><span class="num">4</span><p>If gcd(a, n) = 1, then <b>a⁻¹ = x mod n</b>.</p></div>
-      <div class="r" style="--d:6"><span class="num">5</span><p><b>GF(p)</b> = ℤₚ with p prime: a finite field with p elements.</p></div>
-      <div class="r" style="--d:7"><span class="num">6</span><p>ℤₙ with n composite is not a field. GF(2): + = XOR, × = AND.</p></div>
-    </div>
-  </div>
+<!-- ===== 39 · 15⁻¹ mod 26: step 2 ===== -->
+<section class="slide" data-unit="1.3 Euclid &amp; GF(p)" data-title="15⁻¹ mod 26: step 2">
+<!-- NOTES: Each line replaces one remainder using the line above it in step 1. -->
+  <div class="kick r" style="--d:0">1.3 · worked example</div><h2 class="r" style="--d:1">Find 15⁻¹ mod 26  ·  Step 2: work backwards</h2>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>1 = 4 − 3</code></li><li class="r" style="--d:4"><span class="n">2</span><code>  = 4 − (11 − 2 × 4) = 3 × 4 − 11</code></li><li class="r" style="--d:5"><span class="n">3</span><code>  = 3 × (15 − 11) − 11 = 3 × 15 − 4 × 11</code></li><li class="r" style="--d:6"><span class="n">4</span><code>  = 3 × 15 − 4 × (26 − 15) = 7 × 15 − 4 × 26</code></li></ol>
+  <div class="result r" style="--d:7"><p>15⁻¹ mod 26 = 7.  Check: 15 × 7 = 105 = 4 × 26 + 1 ✓</p></div>
 </section>
 
-<!-- ======================= 1.4 POLYNOMIAL BASICS ======================= -->
-<section class="slide inv" id="u14" data-unit="1.4 Polynomials & GF(2ⁿ)" data-title="Polynomials: the basics">
-<!-- NOTES:
-• A polynomial of degree n: f(x) = aₙxⁿ + … + a₁x + a₀, with aₙ ≠ 0. The aᵢ are coefficients from some set S (the coefficient set).
-• Monic: leading coefficient aₙ = 1. Example: x³ + 2x + 5 is monic of degree 3.
-• We never "plug in" a value for x here; x is just a placeholder (an indeterminate). We work with the coefficient lists.
-• Three kinds of polynomial arithmetic (Stallings): ordinary; coefficients mod p; coefficients mod p AND polynomials reduced mod an irreducible m(x). The third gives GF(pⁿ).
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.4</b><span>Polynomial arithmetic</span></div>
-    <h2 class="r s" style="--d:1">A polynomial is just a list of coefficients.</h2>
-    <div class="def r" style="--d:2"><span class="k">Definition</span><p class="sm">A polynomial of degree n (n ≥ 0): &nbsp;<span class="math">f(x) = aₙxⁿ + aₙ₋₁xⁿ⁻¹ + … + a₁x + a₀</span>, &nbsp;aₙ ≠ 0.<br>The aᵢ are <b>coefficients</b> from a coefficient set S. <b>Monic</b>: aₙ = 1. We never substitute a value for x; x is a placeholder.</p></div>
-    <div class="hint r" style="--d:3">Three kinds of polynomial arithmetic</div>
-    <div class="bento r" style="--d:4;grid-template-columns:1fr 1fr 1.2fr">
-      <div class="cell" style="background:#151820;border-color:#3A3F4A;color:var(--paper)"><span class="num" style="font-size:64px">1</span><h3>Ordinary</h3><p class="muted">Usual algebra rules, integer or real coefficients.</p></div>
-      <div class="cell" style="background:#151820;border-color:#3A3F4A;color:var(--paper)"><span class="num" style="font-size:64px">2</span><h3>Coefficients mod p</h3><p class="muted">Coefficients come from GF(p). With p = 2: bits.</p></div>
-      <div class="cell sigbg"><span class="num" style="font-size:64px">3</span><h3>Coefficients mod p, polynomials mod m(x)</h3><p>m(x) irreducible of degree n. This builds the field GF(pⁿ).</p></div>
-    </div>
-  </div>
+<!-- ===== 40 · What is GF(p)? ===== -->
+<section class="slide" data-unit="1.3 Euclid &amp; GF(p)" data-title="What is GF(p)?">
+<!-- NOTES: Named after the French mathematician Évariste Galois. -->
+  <div class="kick r" style="--d:0">1.3</div><h2 class="r" style="--d:1">What is GF(p)?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>The numbers {0, 1, …, p − 1} with + and × mod p, where p is prime. It is a field.</p></div><div class="mid"><div class="two"><ul class="points r" style="--d:3"><li>GF = Galois Field</li><li>A field with a finite number of elements</li></ul><div class="example r" style="--d:4"><span class="lab">Example</span><pre>GF(7) =
+{0, 1, 2, 3, 4, 5, 6}</pre></div></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>GF(p) is a clock with a prime number of hours.</p></div>
 </section>
 
-<!-- ======================= 1.4 ORDINARY ARITHMETIC ======================= -->
-<section class="slide" data-unit="1.4 Polynomials & GF(2ⁿ)" data-title="Ordinary polynomial arithmetic">
-<!-- NOTES:
-• f(x) = x³ + x² + 2 and g(x) = x² − x + 1.
-• Add / subtract: combine like powers.
-• Multiply: multiply every term by every term, then collect: (x³ + x² + 2)(x² − x + 1) = x⁵ + 3x² − 2x + 2.
-• Divide (long division): quotient x + 2, remainder x. Check: (x² − x + 1)(x + 2) + x = x³ + x² + 2 ✓.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.4</b><span>Kind 1 · ordinary arithmetic</span></div>
-    <h2 class="r s" style="--d:1">Same rules you learned in school.</h2>
-    <div class="row gap48 r" style="--d:2"><div class="math" style="font-size:32px">f(x) = x³ + x² + 2</div><div class="math" style="font-size:32px">g(x) = x² − x + 1</div></div>
-    <div class="half grow">
-      <div class="steps">
-        <div class="st r" style="--d:3;grid-template-columns:60px 1fr"><span>f+g</span><span>= x³ + 2x² − x + 3</span></div>
-        <div class="st r" style="--d:4;grid-template-columns:60px 1fr"><span>f−g</span><span>= x³ + x + 1</span></div>
-        <div class="st r" style="--d:5;grid-template-columns:60px 1fr"><span>f×g</span><span>= x⁵ + 3x² − 2x + 2</span></div>
-        <div class="st r" style="--d:6;grid-template-columns:60px 1fr"><span>f÷g</span><span>= quotient <b class="hl">x + 2</b>, remainder <b class="hl">x</b></span></div>
-      </div>
-      <div class="col gap16 r" style="--d:6">
-        <div class="hint">Long division of f by g</div>
-        <pre class="code">            x  + 2
-x²−x+1 ) x³ + x²      + 2
-         x³ − x² +  x
-         ─────────────
-              2x² −  x + 2
-              2x² − 2x + 2
-              ────────────
-                     x      ← remainder</pre>
-      </div>
-    </div>
-  </div>
+<!-- ===== 41 · Inverses in GF(7) ===== -->
+<section class="slide" data-unit="1.3 Euclid &amp; GF(p)" data-title="Inverses in GF(7)">
+<!-- NOTES: Compare with ℤ₈, where 2, 4 and 6 have no inverse. -->
+  <div class="kick r" style="--d:0">1.3</div><h2 class="r" style="--d:1">Inverses in GF(7)</h2>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>Number</th><th>Inverse</th><th>Check (mod 7)</th></tr>
+  <tr><td><b>1</b></td><td>1</td><td>1 × 1 = 1</td></tr>
+  <tr><td><b>2</b></td><td>4</td><td>2 × 4 = 8 ≡ 1</td></tr>
+  <tr><td><b>3</b></td><td>5</td><td>3 × 5 = 15 ≡ 1</td></tr>
+  <tr><td><b>4</b></td><td>2</td><td>4 × 2 = 8 ≡ 1</td></tr>
+  <tr><td><b>5</b></td><td>3</td><td>5 × 3 = 15 ≡ 1</td></tr>
+  <tr><td><b>6</b></td><td>6</td><td>6 × 6 = 36 ≡ 1</td></tr></table></div>
+  <div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Every non-zero number has an inverse, so GF(7) is a field.</p></div>
 </section>
 
-<!-- ======================= 1.4 BITS AS POLYNOMIALS ======================= -->
-<section class="slide" data-unit="1.4 Polynomials & GF(2ⁿ)" data-title="Bits as polynomials over GF(2)">
-<!-- NOTES:
-• Write the bits of a byte as coefficients. 1011 → x³ + x + 1.
-• Coefficients are in GF(2), so 1 + 1 = 0: addition is XOR, no carries. Subtraction is the same as addition.
-• (x² + x + 1) + (x² + 1) = x → 111 ⊕ 101 = 010.
-• (x + 1)(x + 1) = x² + 2x + 1 = x² + 1 because 2 ≡ 0.
--->
-  <div class="split">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>1.4</b><span>Kind 2 · coefficients in GF(2)</span></div>
-      <h2 class="r" style="--d:1;font-size:84px">Read a byte as a polynomial.</h2>
-      <div class="col gap24">
-        <div class="bits r" style="--d:2"><div class="bit one">1</div><div class="bit">0</div><div class="bit one">1</div><div class="bit one">1</div></div>
-        <div class="math r" style="--d:3;font-size:42px">x³ + x + 1</div>
-        <p class="muted r" style="--d:4">Each bit is a coefficient. Coefficients live mod 2, so <b style="color:var(--ink)">1 + 1 = 0</b> and subtracting is the same as adding.</p>
-      </div>
-    </div>
-    <div class="col gap32 center">
-      <div class="r" style="--d:3"><span class="tag">Add = XOR, no carries</span>
-        <div class="steps" style="margin-top:12px"><div class="st"><span>+</span><span>(x²+x+1) + (x²+1) = <b class="hl">x</b></span></div><div class="st"><span>⊕</span><span>111 ⊕ 101 = <b class="hl">010</b></span></div></div></div>
-      <div class="r" style="--d:4"><span class="tag">Multiply, then drop even coefficients</span>
-        <div class="steps" style="margin-top:12px"><div class="st"><span>×</span><span>(x+1)(x+1) = x² + 2x + 1 = <b class="hl">x² + 1</b></span></div></div></div>
-    </div>
-  </div>
+<!-- ===== 42 · Why must p be prime? ===== -->
+<section class="slide" data-unit="1.3 Euclid &amp; GF(p)" data-title="Why must p be prime?">
+<!-- NOTES: These primes are about 77 digits long. -->
+  <div class="kick r" style="--d:0">1.3</div><h2 class="r" style="--d:1">Why must p be prime?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>A prime shares no factor with smaller numbers, so every number has an inverse.</p></div><div class="mid"><div class="two"><ul class="points r" style="--d:3"><li>ℤ₈: 2 × anything is even, so never 1 mod 8 ✗</li><li>GF(7): every non-zero number has an inverse ✓</li></ul><div class="example r" style="--d:4"><span class="lab">Example</span><pre>Real life:
+Bitcoin:
+p = 2²⁵⁶ − 2³² − 977
+WhatsApp:
+p = 2²⁵⁵ − 19</pre></div></div></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Same idea as GF(7), just with very big primes.</p></div>
 </section>
 
-<!-- ======================= 1.4 GF(2) WORKED ======================= -->
-<section class="slide inv" data-unit="1.4 Polynomials & GF(2ⁿ)" data-title="Worked example over GF(2)">
-<!-- NOTES:
-• Textbook example (Stallings): f(x) = x⁷ + x⁵ + x⁴ + x³ + x + 1, g(x) = x³ + x + 1, coefficients in GF(2).
-• f + g: x³, x and 1 appear in both, so they cancel → x⁷ + x⁵ + x⁴. f − g is the same.
-• f × g = x¹⁰ + x⁴ + x² + 1 (many terms cancel in pairs).
-• f ÷ g = x⁴ + 1 with remainder 0, so g divides f exactly.
-• In bits: f = 10111011, g = 1011, f + g = 10110000.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.4</b><span>Worked example · GF(2) coefficients</span></div>
-    <h2 class="r s" style="--d:1">Pairs of equal terms cancel.</h2>
-    <div class="row gap48 r" style="--d:2;flex-wrap:wrap"><div class="math" style="font-size:28px">f(x) = x⁷ + x⁵ + x⁴ + x³ + x + 1 &nbsp;<span class="muted">(10111011)</span></div><div class="math" style="font-size:28px">g(x) = x³ + x + 1 &nbsp;<span class="muted">(1011)</span></div></div>
-    <div class="steps grow" style="font-size:26px">
-      <div class="st r" style="--d:3;grid-template-columns:90px 1fr"><span>f + g</span><span>= x⁷ + x⁵ + x⁴ &nbsp;<span class="muted">(x³, x, 1 cancel · 10110000)</span></span></div>
-      <div class="st r" style="--d:4;grid-template-columns:90px 1fr"><span>f − g</span><span>= x⁷ + x⁵ + x⁴ &nbsp;<span class="muted">(same as f + g in GF(2))</span></span></div>
-      <div class="st r" style="--d:5;grid-template-columns:90px 1fr"><span>f × g</span><span>= x¹⁰ + x⁴ + x² + 1</span></div>
-      <div class="st r" style="--d:6;grid-template-columns:90px 1fr"><span>f ÷ g</span><span>= <b class="hl">x⁴ + 1</b>, remainder <b class="hl">0</b> &nbsp;<span class="muted">(g divides f)</span></span></div>
-    </div>
-  </div>
+<!-- ===== 43 · Unit 1.4 ===== -->
+<section class="slide dark sec" data-unit="1.4 Polynomials &amp; GF(2ⁿ)" data-title="Unit 1.4">
+<!-- NOTES:  -->
+  <div class="secnum r" style="--d:0">1.4</div>
+  <h1 class="r" style="--d:1">Polynomials and GF(2ⁿ)</h1>
+  <p class="sub r" style="--d:2">Maths on bits and bytes</p>
 </section>
 
-<!-- ======================= 1.4 DIVISION, IRREDUCIBLE, GCD ======================= -->
-<section class="slide" data-unit="1.4 Polynomials & GF(2ⁿ)" data-title="Division, irreducible polynomials, GCD">
-<!-- NOTES:
-• Division algorithm for polynomials: f(x) = q(x)·g(x) + r(x), with degree r < degree g. We write r(x) = f(x) mod g(x).
-• If r(x) = 0, g(x) divides f(x): g(x) | f(x).
-• IRREDUCIBLE (prime) polynomial: cannot be written as a product of two polynomials of lower degree over the field.
-• Over GF(2): x⁴ + x + 1 is irreducible. x³ + x² + x + 1 = (x + 1)(x² + 1) is reducible. Quick test: if f(1) = 0 over GF(2) (even number of terms), x + 1 is a factor.
-• GCD of polynomials works exactly like Euclid: gcd(a, b) = gcd(b, a mod b).
-  Example: gcd(x⁶ + x⁵ + x⁴ + x³ + x² + x + 1, x⁴ + x² + x + 1) = x³ + x² + 1 over GF(2).
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.4</b><span>Division · irreducible · gcd</span></div>
-    <h2 class="r s" style="--d:1">Polynomials have “primes” and a Euclid too.</h2>
-    <div class="half grow">
-      <div class="col gap16">
-        <div class="def r" style="--d:2"><span class="k">Division algorithm</span><p class="sm"><span class="math">f(x) = q(x)·g(x) + r(x)</span>, &nbsp;deg r &lt; deg g.<br>Write <span class="math">r(x) = f(x) mod g(x)</span>. If r(x) = 0 then g(x) | f(x).</p></div>
-        <div class="def r" style="--d:3"><span class="k">Irreducible (prime) polynomial</span><p class="sm">Cannot be written as a product of two lower-degree polynomials over the field.</p></div>
-        <div class="steps sm r" style="--d:4"><div class="st"><span>✓</span><span>x⁴ + x + 1 is irreducible over GF(2)</span></div><div class="st"><span>✗</span><span>x³ + x² + x + 1 = (x + 1)(x² + 1)</span></div></div>
-      </div>
-      <div class="col gap16">
-        <div class="def r" style="--d:4"><span class="k">Polynomial GCD (Euclid again)</span><p class="sm"><span class="math">gcd[a(x), b(x)] = gcd[b(x), a(x) mod b(x)]</span>. Repeat until the remainder is 0.</p></div>
-        <div class="r" style="--d:5"><div class="hint">Example over GF(2)</div>
-          <div class="math" style="font-size:21px;line-height:1.6">gcd(x⁶+x⁵+x⁴+x³+x²+x+1, x⁴+x²+x+1)<br>= <span class="sig">x³ + x² + 1</span></div></div>
-        <p class="sm muted r" style="--d:6">Quick test over GF(2): an even number of terms means x + 1 is a factor.</p>
-      </div>
-    </div>
-  </div>
+<!-- ===== 44 · What is a polynomial? ===== -->
+<section class="slide" data-unit="1.4 Polynomials &amp; GF(2ⁿ)" data-title="What is a polynomial?">
+<!-- NOTES: Students know polynomials from school. Only the words degree and monic may be new. -->
+  <div class="kick r" style="--d:0">1.4</div><h2 class="r" style="--d:1">What is a polynomial?</h2><div class="intro r" style="--d:2">f(x) = x³ + 2x² + 3x + 4</div>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>Term</th><th>Coefficient</th><th>Power</th></tr>
+  <tr><td><b>x³</b></td><td>1</td><td>3</td></tr>
+  <tr><td><b>2x²</b></td><td>2</td><td>2</td></tr>
+  <tr><td><b>3x</b></td><td>3</td><td>1</td></tr>
+  <tr><td><b>4</b></td><td>4</td><td>0</td></tr></table></div>
+  <div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Degree = the highest power = 3.  Monic = the highest-power coefficient is 1.</p></div>
 </section>
 
-<!-- ======================= 1.4 WHY GF(2^n) ======================= -->
-<section class="slide inv" data-unit="1.4 Polynomials & GF(2ⁿ)" data-title="Why GF(2ⁿ)?">
-<!-- NOTES:
-• Computers want fields with 2ⁿ elements so that every n-bit pattern is one element: 8 bits → 256 elements.
-• But 256 is not prime, so ℤ₂₅₆ is not a field (2 has no inverse mod 256).
-• Evidence from ℤ₈: in the multiplication table of 1–7, the value 4 appears 12 times and 0 appears 5 times, odd values only 4 times. Uneven → patterns an attacker can exploit, and no inverses for evens.
-• In GF(2³) (next slide), each non-zero value appears exactly 7 times and 0 never appears. Perfectly even.
-• Construction (kind 3): polynomials of degree < n with coefficients in GF(2), and every product reduced mod an irreducible m(x) of degree n. This is a field with 2ⁿ elements.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.4</b><span>Kind 3 · modular polynomial arithmetic</span></div>
-    <h2 class="r s" style="--d:1">256 isn’t prime. So we build a different field.</h2>
-    <div class="half grow">
-      <div class="col gap16">
-        <p class="sm r" style="--d:2">Computers want a field with 2ⁿ elements so that every n-bit pattern is an element. But ℤ₂ⁿ is not a field: in ℤ₂₅₆, 2 has no inverse.</p>
-        <div class="hint r" style="--d:3">How often each value appears in the 7×7 multiplication table of 1–7</div>
-        <table class="tbl r" style="--d:4;font-size:20px">
-          <tr><th>value</th><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td></tr>
-          <tr><th>ℤ₈</th><td class="hl">5</td><td>4</td><td>8</td><td>4</td><td class="hl">12</td><td>4</td><td>8</td><td>4</td></tr>
-          <tr><th>GF(2³)</th><td>0</td><td>7</td><td>7</td><td>7</td><td>7</td><td>7</td><td>7</td><td>7</td></tr>
-        </table>
-        <p class="sm muted r" style="--d:5">Uneven counts create patterns attackers exploit. GF(2³) is perfectly even.</p>
-      </div>
-      <div class="def r" style="--d:3;align-self:start"><span class="k">Construction of GF(2ⁿ)</span>
-        <ul class="list sm"><li>Elements: all polynomials of degree &lt; n with coefficients in GF(2). There are 2ⁿ of them, one per n-bit pattern.</li><li>Addition: XOR of the bit patterns.</li><li>Multiplication: multiply, then take the remainder mod an <b>irreducible</b> polynomial m(x) of degree n.</li><li>Result: a field. Every non-zero element has an inverse.</li></ul></div>
-    </div>
-  </div>
+<!-- ===== 45 · Polynomial arithmetic ===== -->
+<section class="slide" data-unit="1.4 Polynomials &amp; GF(2ⁿ)" data-title="Polynomial arithmetic">
+<!-- NOTES: Do the long division on the board. -->
+  <div class="kick r" style="--d:0">1.4</div><h2 class="r" style="--d:1">Polynomial arithmetic</h2><div class="intro r" style="--d:2">f(x) = x³ + x² + 2      g(x) = x² − x + 1</div>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>Operation</th><th>Answer</th></tr>
+  <tr><td><b>f + g</b></td><td>x³ + 2x² − x + 3</td></tr>
+  <tr><td><b>f − g</b></td><td>x³ + x + 1</td></tr>
+  <tr><td><b>f × g</b></td><td>x⁵ + 3x² − 2x + 2</td></tr>
+  <tr><td><b>f ÷ g</b></td><td>quotient x + 2,  remainder x</td></tr></table></div>
+  <div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Check: (x² − x + 1)(x + 2) + x = x³ + x² + 2 ✓</p></div>
 </section>
 
-<!-- ======================= 1.4 GF(8) TABLE ======================= -->
-<section class="slide" data-unit="1.4 Polynomials & GF(2ⁿ)" data-title="GF(2³) with m(x) = x³ + x + 1">
-<!-- NOTES:
-• GF(2³) has 8 elements 000 to 111, i.e. 0, 1, x, x+1, x², x²+1, x²+x, x²+x+1. Shown as numbers 0–7.
-• Addition is XOR: e.g. 3 + 5 = 011 ⊕ 101 = 110 = 6.
-• Multiplication mod m(x) = x³ + x + 1. Example: 2 × 4 = x · x² = x³. Since x³ ≡ x + 1 (mod m), the answer is 011 = 3.
-• Highlighted 1s give inverses: 2⁻¹ = 5, 3⁻¹ = 6, 4⁻¹ = 7.
--->
-  <div class="col fill gap16">
-    <div class="eyebrow r" style="--d:0"><b>1.4</b><span>GF(2³) · m(x) = x³ + x + 1</span></div>
-    <h2 class="r s" style="--d:1">A complete field with 8 elements.</h2>
-    <div class="row gap48 grow" style="align-items:flex-start">
-      <div class="col gap8 r" style="--d:2"><div class="hint">Multiplication · highlighted 1 = inverse</div><table class="tbl" data-op="gf8" data-n="8" data-hl="1" style="font-size:21px"></table></div>
-      <div class="col gap16" style="flex:1">
-        <table class="tbl r" style="--d:3;font-size:18px">
-          <tr><th>#</th><th>bits</th><th>polynomial</th><th>#</th><th>bits</th><th>polynomial</th></tr>
-          <tr><td>0</td><td>000</td><td>0</td><td>4</td><td>100</td><td>x²</td></tr>
-          <tr><td>1</td><td>001</td><td>1</td><td>5</td><td>101</td><td>x² + 1</td></tr>
-          <tr><td>2</td><td>010</td><td>x</td><td>6</td><td>110</td><td>x² + x</td></tr>
-          <tr><td>3</td><td>011</td><td>x + 1</td><td>7</td><td>111</td><td>x² + x + 1</td></tr>
-        </table>
-        <div class="steps sm r" style="--d:4">
-          <div class="st"><span>+</span><span>3 + 5 = 011 ⊕ 101 = 110 = <b class="hl">6</b></span></div>
-          <div class="st"><span>×</span><span>2 × 4 = x·x² = x³ ≡ x + 1 = <b class="hl">3</b></span></div>
-          <div class="st"><span>⁻¹</span><span>2⁻¹ = 5, 3⁻¹ = 6, 4⁻¹ = 7</span></div>
-        </div>
-        <p class="sm muted r" style="--d:5">Key reduction rule: x³ ≡ x + 1, because m(x) = x³ + x + 1 ≡ 0.</p>
-      </div>
-    </div>
-  </div>
+<!-- ===== 46 · What is GF(2)? ===== -->
+<section class="slide" data-unit="1.4 Polynomials &amp; GF(2ⁿ)" data-title="What is GF(2)?">
+<!-- NOTES: Computers use bits, so GF(2) is the natural field for them. -->
+  <div class="kick r" style="--d:0">1.4</div><h2 class="r" style="--d:1">What is GF(2)?</h2><div class="intro r" style="--d:2">Only two numbers: 0 and 1. All arithmetic is mod 2.</div>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>a</th><th>b</th><th>a + b</th></tr>
+  <tr><td><b>0</b></td><td>0</td><td>0</td></tr>
+  <tr><td><b>0</b></td><td>1</td><td>1</td></tr>
+  <tr><td><b>1</b></td><td>0</td><td>1</td></tr>
+  <tr><td><b>1</b></td><td>1</td><td>0</td></tr></table></div>
+  <div class="remember r" style="--d:5"><span class="lab">Remember</span><p>1 + 1 = 0, because 2 mod 2 = 0. In computers this is called XOR.</p></div>
 </section>
 
-<!-- ======================= 1.4 GENERATOR ======================= -->
-<section class="slide inv" data-unit="1.4 Polynomials & GF(2ⁿ)" data-title="Using a generator in GF(2³)">
-<!-- NOTES:
-• A generator g of GF(2ⁿ): its powers g⁰ … g^(2ⁿ−2) give every non-zero element. For GF(2³) with m(x) = x³ + x + 1, g = x works.
-• Use g³ = g + 1 (from m(g) = 0) to reduce: g⁴ = g·g³ = g² + g; g⁵ = g³ + g² = g² + g + 1; g⁶ = g³ + g² + g = g² + 1; g⁷ = g³ + g = 1.
-• Why useful: multiplication becomes adding exponents mod 7. g⁴ × g⁵ = g⁹ = g² (9 mod 7 = 2). Check: 6 × 7 = 4 in the table ✓.
-• Inverse: (gᵏ)⁻¹ = g^(7−k).
--->
-  <div class="split" style="grid-template-columns:1fr 1fr">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>1.4</b><span>Generator of GF(2ⁿ)</span></div>
-      <h2 class="r" style="--d:1;font-size:76px">Powers of g list every non-zero element.</h2>
-      <div class="def r" style="--d:2"><span class="k">Rule from m(x)</span><p class="sm">m(g) = g³ + g + 1 = 0, so <span class="math">g³ = g + 1</span>. Use it to reduce every higher power.</p></div>
-      <div class="def r" style="--d:3"><span class="k">Why it helps</span><p class="sm">Multiply by adding exponents mod 7: <span class="math">g⁴ · g⁵ = g⁹ = g²</span>. Check: 6 × 7 = 4 ✓. &nbsp;Inverse: <span class="math">(gᵏ)⁻¹ = g⁷⁻ᵏ</span>.</p></div>
-    </div>
-    <div class="col center">
-      <table class="tbl r" style="--d:2;font-size:22px;width:100%">
-        <tr><th>power</th><th>reduce using g³ = g + 1</th><th>bits</th><th>#</th></tr>
-        <tr><td>g⁰</td><td>1</td><td>001</td><td>1</td></tr>
-        <tr><td>g¹</td><td>g</td><td>010</td><td>2</td></tr>
-        <tr><td>g²</td><td>g²</td><td>100</td><td>4</td></tr>
-        <tr><td>g³</td><td>g + 1</td><td>011</td><td>3</td></tr>
-        <tr><td>g⁴</td><td>g·g³ = g² + g</td><td>110</td><td>6</td></tr>
-        <tr><td>g⁵</td><td>g³ + g² = g² + g + 1</td><td>111</td><td>7</td></tr>
-        <tr><td>g⁶</td><td>g³ + g² + g = g² + 1</td><td>101</td><td>5</td></tr>
-        <tr><td>g⁷</td><td>g³ + g = 1</td><td>001</td><td class="hl">1</td></tr>
-      </table>
-    </div>
-  </div>
+<!-- ===== 47 · XOR example ===== -->
+<section class="slide" data-unit="1.4 Polynomials &amp; GF(2ⁿ)" data-title="XOR example">
+<!-- NOTES: Compare each column separately. No carrying. -->
+  <div class="kick r" style="--d:0">1.4</div><h2 class="r" style="--d:1">XOR example</h2>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>   1011</code></li><li class="r" style="--d:4"><span class="n">2</span><code>⊕  0101</code></li><li class="r" style="--d:5"><span class="n">3</span><code>=  1110</code></li></ol>
+  <div class="result r" style="--d:6"><p>Same bits give 0. Different bits give 1.</p></div>
 </section>
 
-<!-- ======================= 1.4 AES GF(2^8) CALCULATOR ======================= -->
-<section class="slide inv" data-unit="1.4 Polynomials & GF(2ⁿ)" data-title="AES lives in GF(2⁸)">
-<!-- NOTES:
-• AES uses GF(2⁸) with m(x) = x⁸ + x⁴ + x³ + x + 1 (hex 11B). Each byte is a polynomial of degree < 8.
-• FIPS-197 examples: {57} + {83} = {D4} (XOR) and {57} • {83} = {C1}.
-• Long form: (x⁶ + x⁴ + x² + x + 1)(x⁷ + x + 1) = x¹³ + x¹¹ + x⁹ + x⁸ + x⁶ + x⁵ + x⁴ + x³ + 1; mod m(x) this is x⁷ + x⁶ + 1 = {C1}.
-• Real world: every AES round (HTTPS, Wi-Fi WPA2) and QR-code error correction use GF(2⁸) arithmetic.
--->
-  <div class="split" style="grid-template-columns:1fr 1fr">
-    <div class="col between">
-      <div class="eyebrow r" style="--d:0"><b>1.4</b><span>GF(2⁸) · AES</span></div>
-      <h2 class="r" style="--d:1;font-size:88px">AES does its byte maths in <span class="sig">GF(2⁸)</span>.</h2>
-      <div class="col gap16 r" style="--d:2">
-        <p class="muted sm">Each byte is a polynomial of degree &lt; 8. Products are reduced by AES’s irreducible polynomial:</p>
-        <div class="math" style="font-size:32px">m(x) = x⁸ + x⁴ + x³ + x + 1</div>
-        <p class="mono" style="font-size:17px;color:#9AA1AE">{57}•{83}: (x⁶+x⁴+x²+x+1)(x⁷+x+1) = x¹³+x¹¹+x⁹+x⁸+x⁶+x⁵+x⁴+x³+1 ≡ x⁷+x⁶+1 = {C1}</p>
-      </div>
-      <p class="mono r" style="--d:3;font-size:17px;color:#9AA1AE;letter-spacing:.06em">USED BY: AES IN HTTPS &amp; WI-FI · QR-CODE ERROR CORRECTION</p>
-    </div>
-    <div class="col gap24 center">
-      <div class="hint r" style="--d:2">Byte calculator · try FIPS-197’s 57 and 83</div>
-      <div class="ctrl r" style="--d:3">
-        <div class="field"><label for="gA">Byte A (hex)</label><input id="gA" value="57" maxlength="2"></div>
-        <div class="field"><label for="gB">Byte B (hex)</label><input id="gB" value="83" maxlength="2"></div>
-      </div>
-      <div class="steps r" style="--d:4" id="gOut"></div>
-    </div>
-  </div>
+<!-- ===== 48 · Bits as a polynomial ===== -->
+<section class="slide" data-unit="1.4 Polynomials &amp; GF(2ⁿ)" data-title="Bits as a polynomial">
+<!-- NOTES: This is the key link: every byte is a polynomial. -->
+  <div class="kick r" style="--d:0">1.4</div><h2 class="r" style="--d:1">Bits as a polynomial</h2><div class="intro r" style="--d:2">The bits 1011, read from right to left</div>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>Position</th><th>Bit</th><th>Term</th></tr>
+  <tr><td><b>x³</b></td><td>1</td><td>x³</td></tr>
+  <tr><td><b>x²</b></td><td>0</td><td>–</td></tr>
+  <tr><td><b>x¹</b></td><td>1</td><td>x</td></tr>
+  <tr><td><b>x⁰</b></td><td>1</td><td>1</td></tr></table></div>
+  <div class="remember r" style="--d:5"><span class="lab">Remember</span><p>1011 = x³ + x + 1</p></div>
 </section>
 
-<!-- ======================= 1.4 XTIME ======================= -->
-<section class="slide" data-unit="1.4 Polynomials & GF(2ⁿ)" data-title="Fast multiplication: multiply by x">
-<!-- NOTES:
-• Multiplying by x ({02}) = shift left one bit. If the top bit (x⁷) was 1, the result has an x⁸ term, so XOR with 1B (= x⁴ + x³ + x + 1) to reduce.
-• Repeating gives {57}·{02} = {AE}, ·{04} = {47}, ·{08} = {8E}, ·{10} = {07}.
-• Any product = sum (XOR) of these: {13} = {01} + {02} + {10}, so {57}•{13} = {57} ⊕ {AE} ⊕ {07} = {FE}. (FIPS-197 example.)
-• This is how AES hardware and software multiply: only shifts and XORs.
--->
-  <div class="col fill gap24">
-    <div class="eyebrow r" style="--d:0"><b>1.4</b><span>Implementation trick</span></div>
-    <h2 class="r s" style="--d:1">Multiply by x = shift left, then maybe XOR 1B.</h2>
-    <div class="half grow">
-      <div class="col gap16">
-        <div class="def r" style="--d:2"><span class="k">Rule for b · {02}</span><p class="sm">Shift b one bit left. If the bit that fell off (the x⁷ bit) was 1, XOR the result with <span class="math">{1B} = 00011011</span>.</p></div>
-        <table class="tbl r" style="--d:3;font-size:21px">
-          <tr><th>step</th><th>bits</th><th>hex</th><th>note</th></tr>
-          <tr><td>{57}</td><td>01010111</td><td>57</td><td>start</td></tr>
-          <tr><td>·{02}</td><td>10101110</td><td>AE</td><td>top bit 0: just shift</td></tr>
-          <tr><td>·{04}</td><td>01000111</td><td>47</td><td>top bit 1: shift, ⊕ 1B</td></tr>
-          <tr><td>·{08}</td><td>10001110</td><td>8E</td><td>just shift</td></tr>
-          <tr><td>·{10}</td><td>00000111</td><td>07</td><td>shift, ⊕ 1B</td></tr>
-        </table>
-      </div>
-      <div class="col gap16 center">
-        <div class="hint r" style="--d:3">Now any product: {57} • {13}</div>
-        <div class="steps r" style="--d:4">
-          <div class="st"><span>1</span><span>{13} = {01} ⊕ {02} ⊕ {10}</span></div>
-          <div class="st"><span>2</span><span>{57}•{13} = {57} ⊕ {AE} ⊕ {07}</span></div>
-          <div class="st"><span>=</span><span><b class="hl">{FE}</b></span></div>
-        </div>
-        <p class="take r" style="--d:5;font-size:28px">Only shifts and XORs: that is why AES is fast on every phone.</p>
-      </div>
-    </div>
-  </div>
+<!-- ===== 49 · Adding over GF(2) ===== -->
+<section class="slide" data-unit="1.4 Polynomials &amp; GF(2ⁿ)" data-title="Adding over GF(2)">
+<!-- NOTES: Remember 1 + 1 = 0 in GF(2). -->
+  <div class="kick r" style="--d:0">1.4</div><h2 class="r" style="--d:1">Adding polynomials over GF(2)</h2>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>(x² + x + 1) + (x² + 1)</code></li><li class="r" style="--d:4"><span class="n">2</span><code>= x² + x² + x + 1 + 1</code></li><li class="r" style="--d:5"><span class="n">3</span><code>x² + x² = 0  and  1 + 1 = 0</code></li><li class="r" style="--d:6"><span class="n">4</span><code>= x</code></li></ol>
+  <div class="result r" style="--d:7"><p>Same terms cancel. Just like XOR: 111 ⊕ 101 = 010</p></div>
 </section>
 
-<!-- ======================= 1.4 KEY POINTS ======================= -->
-<section class="slide inv" data-unit="1.4 Polynomials & GF(2ⁿ)" data-title="Key points: unit 1.4">
-<!-- NOTES:
-• Quick check: (x² + 1) + (x² + x) over GF(2)? (x + 1). Why not ℤ₂₅₆ for AES? (not a field). What is x³ in GF(2³) mod x³+x+1? (x + 1).
--->
-  <div class="col fill gap32">
-    <div class="eyebrow r" style="--d:0"><b>1.4</b><span>Key points to remember</span></div>
-    <h2 class="r s" style="--d:1">Unit 1.4 in six lines.</h2>
-    <div class="kp">
-      <div class="r" style="--d:2"><span class="num">1</span><p>A polynomial is a list of coefficients; x is only a placeholder.</p></div>
-      <div class="r" style="--d:3"><span class="num">2</span><p>Over <b>GF(2)</b>: add = subtract = XOR; equal terms cancel in pairs.</p></div>
-      <div class="r" style="--d:4"><span class="num">3</span><p>f = q·g + r with deg r &lt; deg g. <b>Irreducible</b> = cannot be factored.</p></div>
-      <div class="r" style="--d:5"><span class="num">4</span><p><b>GF(2ⁿ)</b>: polynomials of degree &lt; n, reduced mod an irreducible m(x) of degree n.</p></div>
-      <div class="r" style="--d:6"><span class="num">5</span><p>A generator g lists every non-zero element as gᵏ; multiply by adding exponents.</p></div>
-      <div class="r" style="--d:7"><span class="num">6</span><p><b>AES</b>: GF(2⁸), m(x) = x⁸ + x⁴ + x³ + x + 1; ×{02} = shift, then ⊕ 1B if needed.</p></div>
-    </div>
-  </div>
+<!-- ===== 50 · Irreducible polynomial ===== -->
+<section class="slide" data-unit="1.4 Polynomials &amp; GF(2ⁿ)" data-title="Irreducible polynomial">
+<!-- NOTES: Just as we needed a prime p for GF(p). -->
+  <div class="kick r" style="--d:0">1.4</div><h2 class="r" style="--d:1">What is an irreducible polynomial?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>A polynomial that cannot be factored. It is like a prime number.</p></div><div class="mid"><ul class="points r" style="--d:3"><li>x⁴ + x + 1:  cannot be factored, so irreducible ✓</li><li>x³ + x² + x + 1 = (x + 1)(x² + 1), so reducible ✗</li></ul></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>We need irreducible polynomials to build finite fields.</p></div>
 </section>
 
-<!-- ======================= RECAP ======================= -->
-<section class="slide" data-unit="Wrap-up" data-title="Module recap">
-<!-- NOTES:
-• Ask a student for the real-world example of each line.
-• CAE 1 (week 7) covers Modules 1 and 2.
--->
-  <div class="col fill gap32">
-    <div class="eyebrow r" style="--d:0"><b>Recap</b><span>Module 1 in seven lines</span></div>
-    <h2 class="r s" style="--d:1">Seven ideas, one purpose: a reliable undo.</h2>
-    <div class="steps" style="font-family:var(--body);font-size:27px;line-height:1.3">
-      <div class="st rx" style="--d:2;grid-template-columns:240px 1fr"><b class="mono cob">Group</b><span>One operation, and every move can be undone. Aadhaar check digit.</span></div>
-      <div class="st rx" style="--d:3;grid-template-columns:240px 1fr"><b class="mono cob">Ring</b><span>Add and multiply, but division may fail. Integers, ℤ₁₂.</span></div>
-      <div class="st rx" style="--d:4;grid-template-columns:240px 1fr"><b class="mono cob">Field</b><span>+ − × ÷ all work. Ciphers live here.</span></div>
-      <div class="st rx" style="--d:5;grid-template-columns:240px 1fr"><b class="mono cob">a mod n</b><span>Remainder. Calendars, Caesar cipher, card checks.</span></div>
-      <div class="st rx" style="--d:6;grid-template-columns:240px 1fr"><b class="mono cob">Euclid</b><span>Finds gcd; extended, it finds inverses. RSA keys.</span></div>
-      <div class="st rx" style="--d:7;grid-template-columns:240px 1fr"><b class="mono cob">GF(p)</b><span>Prime-sized clock = field. Bitcoin, WhatsApp.</span></div>
-      <div class="st rx" style="--d:8;grid-template-columns:240px 1fr"><b class="mono sig">GF(2ⁿ)</b><span>Bytes as polynomials mod m(x). AES, QR codes.</span></div>
-    </div>
-  </div>
+<!-- ===== 51 · Why GF(2ⁿ)? ===== -->
+<section class="slide" data-unit="1.4 Polynomials &amp; GF(2ⁿ)" data-title="Why GF(2ⁿ)?">
+<!-- NOTES: In mod 256, the number 2 has no inverse. -->
+  <div class="kick r" style="--d:0">1.4</div><h2 class="r" style="--d:1">Why do we need GF(2ⁿ)?</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>A byte has 8 bits, so 2⁸ = 256 values. But 256 is not prime, so mod 256 is not a field.</p></div><div class="mid"><ul class="points r" style="--d:3"><li>The fix:</li><li>1. Treat each byte as a polynomial</li><li>2. Multiply the polynomials</li><li>3. Reduce by an irreducible polynomial of degree 8</li></ul></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Result: a field with 256 elements, called GF(2⁸).</p></div>
 </section>
 
-<!-- ======================= PRACTICE ======================= -->
-<section class="slide" data-unit="Wrap-up" data-title="Practice questions">
-<!-- NOTES:
-• Students attempt on paper first, then reveal.
-• Q1 100 mod 7 = 2. Q2 −23 mod 5 = 2 (−23 = −5·5 + 2). Q3 gcd(84,36) = 12. Q4 3⁻¹ mod 11 = 4.
-• Q5 7⁻¹ mod 40 = 23 (7·23 = 161 = 4·40 + 1). Q6 ℤ₁₀ is not a field: 2 has no inverse.
-• Q7 (x²+1)+(x²+x) = x+1 over GF(2). Q8 In GF(2³), x² · x² = x⁴ = x·x³ = x(x+1) = x² + x.
--->
-  <div class="col fill gap16">
-    <div class="row between end">
-      <div class="col gap16"><div class="eyebrow r" style="--d:0"><b>Practice</b><span>Try on paper, then reveal</span></div>
-      <h2 class="r s" style="--d:1">Eight questions, one per idea.</h2></div>
-      <div class="num sig r" style="--d:1;font-size:140px">?</div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:22px 30px;flex:1">
-      <div class="q r" style="--d:2"><div class="hint">Q1 · mod</div><div class="math" style="font-size:26px">100 mod 7</div><button class="btn reveal">Show answer</button><div class="ans">2  (7 × 14 = 98)</div></div>
-      <div class="q r" style="--d:2"><div class="hint">Q2 · negative mod</div><div class="math" style="font-size:26px">−23 mod 5</div><button class="btn reveal">Show answer</button><div class="ans">2  (−23 = −5·5 + 2)</div></div>
-      <div class="q r" style="--d:3"><div class="hint">Q3 · Euclid</div><div class="math" style="font-size:26px">gcd(84, 36)</div><button class="btn reveal">Show answer</button><div class="ans">12  (84 = 2·36 + 12)</div></div>
-      <div class="q r" style="--d:3"><div class="hint">Q4 · inverse</div><div class="math" style="font-size:26px">3⁻¹ mod 11</div><button class="btn reveal">Show answer</button><div class="ans">4  (3 × 4 = 12 ≡ 1)</div></div>
-      <div class="q r" style="--d:4"><div class="hint">Q5 · extended Euclid</div><div class="math" style="font-size:26px">7⁻¹ mod 40</div><button class="btn reveal">Show answer</button><div class="ans">23  (7 × 23 = 161 = 4·40 + 1)</div></div>
-      <div class="q r" style="--d:4"><div class="hint">Q6 · fields</div><div class="math" style="font-size:26px">Is ℤ₁₀ a field?</div><button class="btn reveal">Show answer</button><div class="ans">No: 2 has no inverse (gcd 2)</div></div>
-      <div class="q r" style="--d:5"><div class="hint">Q7 · GF(2)</div><div class="math" style="font-size:26px">(x²+1) + (x²+x)</div><button class="btn reveal">Show answer</button><div class="ans">x + 1  (x² terms cancel)</div></div>
-      <div class="q r" style="--d:5"><div class="hint">Q8 · GF(2³), m = x³+x+1</div><div class="math" style="font-size:26px">x² · x²</div><button class="btn reveal">Show answer</button><div class="ans">x² + x  (x⁴ = x·x³ = x(x+1))</div></div>
-    </div>
-  </div>
+<!-- ===== 52 · Small example: GF(2³) ===== -->
+<section class="slide" data-unit="1.4 Polynomials &amp; GF(2ⁿ)" data-title="Small example: GF(2³)">
+<!-- NOTES: Ask students: what is x² × x²? (x⁴ = x × x³ = x(x + 1) = x² + x) -->
+  <div class="kick r" style="--d:0">1.4</div><h2 class="r" style="--d:1">A small example: GF(2³)</h2>
+  <ol class="steps mid"><li class="r" style="--d:3"><span class="n">1</span><code>2³ = 8 elements:  000 to 111</code></li><li class="r" style="--d:4"><span class="n">2</span><code>Irreducible polynomial:  m(x) = x³ + x + 1</code></li><li class="r" style="--d:5"><span class="n">3</span><code>So  x³ = x + 1   (in GF(2), + and − are the same)</code></li><li class="r" style="--d:6"><span class="n">4</span><code>Example:  x × x² = x³ = x + 1</code></li></ol>
+  <div class="result r" style="--d:7"><p>Rule: replace x³ with x + 1 whenever it appears.</p></div>
 </section>
 
-<!-- ======================= REFERENCES ======================= -->
-<section class="slide inv" data-unit="Wrap-up" data-title="Further reading">
-<!-- NOTES:
-• Main text: Stallings, 7th edition. Module 1 maps to Chapter 2 (divisibility, Euclid, modular arithmetic) and Chapter 5 (groups, rings, fields, GF(p), polynomial arithmetic, GF(2ⁿ)).
-• Encourage students to work the end-of-chapter problems.
--->
-  <div class="col fill between">
-    <div class="eyebrow r" style="--d:0"><b>References</b><span>From the course syllabus</span></div>
-    <h2 class="r s" style="--d:1">Read next.</h2>
-    <div class="steps" style="font-family:var(--body);font-size:23px;line-height:1.4">
-      <div class="st r" style="--d:2;grid-template-columns:60px 1fr"><b class="mono sig">★</b><span><b>Stallings, W.</b> (2017). <i>Cryptography and Network Security: Principles and Practice</i> (7th ed.). Pearson. Chapters 2 and 5.</span></div>
-      <div class="st r" style="--d:3;grid-template-columns:60px 1fr"><b class="mono">2</b><span>Rosen, K. H. (2018). <i>Elementary Number Theory</i> (6th ed.). McGraw-Hill Education.</span></div>
-      <div class="st r" style="--d:4;grid-template-columns:60px 1fr"><b class="mono">3</b><span>Stein, W. (2016). <i>Elementary Number Theory</i> (2nd ed.). Springer.</span></div>
-      <div class="st r" style="--d:5;grid-template-columns:60px 1fr"><b class="mono">4</b><span>Menezes, A., Van Oorschot, P., &amp; Vanstone, S. <i>Handbook of Applied Cryptography</i>. CRC Press.</span></div>
-      <div class="st r" style="--d:6;grid-template-columns:60px 1fr"><b class="mono">5</b><span>NIST FIPS 197, <i>Advanced Encryption Standard</i>: source of the GF(2⁸) examples {57}•{83} and {57}•{13}.</span></div>
-    </div>
-    <p class="hint r" style="--d:7">Next: Module 2 · Number theory (primes, Fermat, Euler, CRT, discrete logarithms)</p>
-  </div>
+<!-- ===== 53 · AES and GF(2⁸) ===== -->
+<section class="slide" data-unit="1.4 Polynomials &amp; GF(2ⁿ)" data-title="AES and GF(2⁸)">
+<!-- NOTES: Don't make students memorise the full AES calculation. They need the idea: byte → polynomial → multiply → reduce. -->
+  <div class="kick r" style="--d:0">1.4 · real life</div><h2 class="r" style="--d:1">AES uses GF(2⁸)</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>AES (Advanced Encryption Standard) does all its byte maths in GF(2⁸).</p></div><div class="mid"><ul class="points r" style="--d:3"><li>Its polynomial: m(x) = x⁸ + x⁴ + x³ + x + 1 (hex 11B)</li><li>To multiply two bytes: write as polynomials → multiply → reduce by m(x)</li><li>Example: {57} × {83} = {C1}</li></ul></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>AES protects HTTPS websites, Wi-Fi and stored files.</p></div>
+</section>
+
+<!-- ===== 54 · How it all connects ===== -->
+<section class="slide" data-unit="Wrap-up" data-title="How it all connects">
+<!-- NOTES: Ask students to explain each row in their own words. -->
+  <div class="kick r" style="--d:0">Summary</div><h2 class="r" style="--d:1">How it all connects</h2>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>Unit</th><th>Topic</th><th>What you learn</th></tr>
+  <tr><td><b>1.1</b></td><td>Groups, rings, fields</td><td>The rules a maths system must follow</td></tr>
+  <tr><td><b>1.2</b></td><td>Modular arithmetic</td><td>Working with remainders, like a clock</td></tr>
+  <tr><td><b>1.3</b></td><td>Euclid and GF(p)</td><td>Finding GCDs and undoing multiplication</td></tr>
+  <tr><td><b>1.4</b></td><td>Polynomials and GF(2ⁿ)</td><td>How computers do maths on bytes in AES</td></tr></table></div>
+  
+</section>
+
+<!-- ===== 55 · Real life → maths ===== -->
+<section class="slide" data-unit="Wrap-up" data-title="Real life → maths">
+<!-- NOTES: Good revision slide before CAE 1. -->
+  <div class="kick r" style="--d:0">Summary</div><h2 class="r" style="--d:1">Real life → maths</h2>
+  <div class="mid"><table class="r" style="--d:3"><tr><th>Where you see it</th><th>The maths behind it</th></tr>
+  <tr><td><b>Caesar cipher</b></td><td>Modular arithmetic (mod 26)</td></tr>
+  <tr><td><b>Aadhaar check digit</b></td><td>A group (Verhoeff algorithm)</td></tr>
+  <tr><td><b>WhatsApp key exchange</b></td><td>Arithmetic mod a prime, GF(p)</td></tr>
+  <tr><td><b>Bitcoin</b></td><td>GF(p)</td></tr>
+  <tr><td><b>AES encryption</b></td><td>GF(2⁸)</td></tr>
+  <tr><td><b>QR code error correction</b></td><td>GF(2⁸)</td></tr></table></div>
+  
+</section>
+
+<!-- ===== 56 · After Module 1 you can… ===== -->
+<section class="slide" data-unit="Wrap-up" data-title="After Module 1 you can…">
+<!-- NOTES: These are the six things CAE 1 and the final exam test from Module 1. -->
+  <div class="kick r" style="--d:0">CO1</div><h2 class="r" style="--d:1">After Module 1 you can…</h2><div class="outcomes mid"><div class="card r" style="--d:2"><span class="n">1</span><p>Define groups, abelian groups, cyclic groups, rings, integral domains and fields</p></div><div class="card r" style="--d:3"><span class="n">2</span><p>Calculate a mod n and use congruence</p></div><div class="card r" style="--d:4"><span class="n">3</span><p>Find the GCD with the Euclidean algorithm</p></div><div class="card r" style="--d:5"><span class="n">4</span><p>Find an inverse with the extended Euclidean algorithm</p></div><div class="card r" style="--d:6"><span class="n">5</span><p>Add, multiply and divide polynomials</p></div><div class="card r" style="--d:7"><span class="n">6</span><p>Explain finite-field arithmetic, including AES's GF(2⁸)</p></div></div>
+</section>
+
+<!-- ===== 57 · Mini test ===== -->
+<section class="slide" data-unit="Wrap-up" data-title="Mini test">
+<!-- NOTES: Give students 8 minutes, then go through the answers. -->
+  <div class="quizhead"><div class="kick r" style="--d:0">Mini test</div><h2 class="r" style="--d:1">Module 1 mini test</h2><div class="qctl r" style="--d:2"><span id="qscore">0 / 8 answered</span><button class="btn" id="qcheck">Check answers</button><button class="btn ghost" id="qreset">Try again</button></div></div>
+  <div class="quiz"><div class="qcard r" style="--d:3" data-a="1">
+    <div class="qn">Q1</div><div class="qq">100 mod 7 = ?</div>
+    <div class="opts"><button class="opt" data-j="0">1</button><button class="opt" data-j="1">2</button><button class="opt" data-j="2">3</button><button class="opt" data-j="3">4</button></div>
+    <div class="why">7 × 14 = 98, and 100 − 98 = 2</div></div><div class="qcard r" style="--d:3" data-a="2">
+    <div class="qn">Q2</div><div class="qq">−23 mod 5 = ?</div>
+    <div class="opts"><button class="opt" data-j="0">−3</button><button class="opt" data-j="1">3</button><button class="opt" data-j="2">2</button><button class="opt" data-j="3">4</button></div>
+    <div class="why">−23 = (−5) × 5 + 2</div></div><div class="qcard r" style="--d:4" data-a="2">
+    <div class="qn">Q3</div><div class="qq">gcd(84, 36) = ?</div>
+    <div class="opts"><button class="opt" data-j="0">6</button><button class="opt" data-j="1">9</button><button class="opt" data-j="2">12</button><button class="opt" data-j="3">18</button></div>
+    <div class="why">84 = 2 × 36 + 12, then 36 = 3 × 12 + 0</div></div><div class="qcard r" style="--d:4" data-a="1">
+    <div class="qn">Q4</div><div class="qq">3⁻¹ mod 11 = ?</div>
+    <div class="opts"><button class="opt" data-j="0">3</button><button class="opt" data-j="1">4</button><button class="opt" data-j="2">5</button><button class="opt" data-j="3">7</button></div>
+    <div class="why">3 × 4 = 12 ≡ 1 (mod 11)</div></div><div class="qcard r" style="--d:5" data-a="2">
+    <div class="qn">Q5</div><div class="qq">7⁻¹ mod 40 = ?</div>
+    <div class="opts"><button class="opt" data-j="0">7</button><button class="opt" data-j="1">17</button><button class="opt" data-j="2">23</button><button class="opt" data-j="3">31</button></div>
+    <div class="why">7 × 23 = 161 = 4 × 40 + 1</div></div><div class="qcard r" style="--d:5" data-a="1">
+    <div class="qn">Q6</div><div class="qq">Is ℤ₁₀ a field?</div>
+    <div class="opts"><button class="opt" data-j="0">Yes</button><button class="opt" data-j="1">No</button></div>
+    <div class="why">2 has no inverse mod 10, because gcd(2, 10) = 2</div></div><div class="qcard r" style="--d:6" data-a="1">
+    <div class="qn">Q7</div><div class="qq">(x² + 1) + (x² + x) over GF(2) = ?</div>
+    <div class="opts"><button class="opt" data-j="0">2x² + x + 1</button><button class="opt" data-j="1">x + 1</button><button class="opt" data-j="2">x² + x</button><button class="opt" data-j="3">x² + 1</button></div>
+    <div class="why">x² + x² = 0, leaving x + 1</div></div><div class="qcard r" style="--d:6" data-a="1">
+    <div class="qn">Q8</div><div class="qq">In GF(2³) with m(x) = x³ + x + 1, x² × x² = ?</div>
+    <div class="opts"><button class="opt" data-j="0">x⁴</button><button class="opt" data-j="1">x² + x</button><button class="opt" data-j="2">x + 1</button><button class="opt" data-j="3">x² + 1</button></div>
+    <div class="why">x⁴ = x × x³ = x(x + 1) = x² + x</div></div></div>
+</section>
+
+<!-- ===== 58 · Read more ===== -->
+<section class="slide" data-unit="Wrap-up" data-title="Read more">
+<!-- NOTES: Encourage students to try the end-of-chapter problems in Stallings. -->
+  <div class="kick r" style="--d:0">References</div><h2 class="r" style="--d:1">Read more</h2><div class="answer r" style="--d:2"><span class="lab">In one line</span><p>Main text: W. Stallings, Cryptography and Network Security (7th ed.), Chapters 2 and 5.</p></div><div class="mid"><ul class="points r" style="--d:3"><li>K. H. Rosen, Elementary Number Theory (6th ed.)</li><li>W. Stein, Elementary Number Theory (2nd ed.)</li><li>NIST FIPS 197: the AES standard</li></ul></div><div class="remember r" style="--d:5"><span class="lab">Remember</span><p>Next: Module 2 · Number theory (primes, Fermat, Euler, CRT).</p></div>
 </section>
 
 </div></div>
-
 <div id="notes" role="region" aria-live="polite"><h4 id="notesTitle">SPEAKER NOTES</h4><div id="notesBody"></div></div>
-<div id="menu" role="dialog" aria-label="Contents">
-  <div class="top"><span style="color:var(--signal)">CONTENTS · MODULE 1</span><button id="menuClose">Close (M)</button></div>
-  <div id="menuGrid"></div>
-</div>
-<div id="chrome">
-  <span id="count">01 / 01</span>
-  <div class="row gap8">
-    <button id="mBtn" title="Contents (M)">Contents</button>
-    <button id="nBtn" title="Speaker notes (N)">Notes</button>
-    <button id="fBtn" title="Full screen (F)">Full screen</button>
-    <button id="pBtn" aria-label="Previous slide">←</button>
-    <button id="xBtn" aria-label="Next slide">→</button>
-  </div>
-</div>
-
+<div id="menu" role="dialog" aria-label="Contents"><div class="top"><span>CONTENTS · MODULE 1</span><button id="menuClose">Close (M)</button></div><div id="menuGrid"></div></div>
+<div id="chrome"><span id="count"></span><div class="row">
+  <button id="mBtn">Contents</button><button id="nBtn">Notes</button><button id="fBtn">Full screen</button>
+  <button id="pBtn" aria-label="Previous slide">←</button><button id="xBtn" aria-label="Next slide">→</button></div></div>
 <script>
 (() => {
-  const slides = [...document.querySelectorAll('.slide')];
-  const stage = document.getElementById('stage');
-  let cur = 0;
-  const pad = n => String(n).padStart(2, '0');
-
-  /* scale the 1600×900 stage to the window */
-  function fit(){ stage.style.transform = `scale(${Math.min(innerWidth/1600, innerHeight/900)})`; }
+  const slides = [...document.querySelectorAll('.slide')], stage = document.getElementById('stage');
+  let cur = 0; const pad = n => String(n).padStart(2, '0');
+  const fit = () => { stage.style.transform = 'scale(' + Math.min(innerWidth/1600, innerHeight/900) + ')'; };
   addEventListener('resize', fit); fit();
-
-  /* speaker notes come from the <!-- NOTES: --> comment in each slide */
-  const notes = slides.map(sl => {
-    for (const n of sl.childNodes) if (n.nodeType === 8 && n.nodeValue.trim().startsWith('NOTES:'))
-      return n.nodeValue.trim().replace(/^NOTES:\s*/, '').replace(/^\s+/gm, '');
-    return '';
-  });
-
-  /* contents menu grouped by unit */
-  const grid = document.getElementById('menuGrid'), menu = document.getElementById('menu');
-  const groups = {};
-  slides.forEach((s, i) => { (groups[s.dataset.unit] = groups[s.dataset.unit] || []).push(i); });
-  for (const u in groups){
-    const box = document.createElement('div');
-    box.innerHTML = `<h4>${u.toUpperCase()}</h4>`;
-    groups[u].forEach(i => {
-      const b = document.createElement('button'); b.className = 'item'; b.dataset.i = i;
-      b.innerHTML = `<span>${pad(i+1)}</span><span>${slides[i].dataset.title}</span>`;
-      b.onclick = () => { go(i); menu.classList.remove('open'); };
-      box.appendChild(b);
-    });
+  const notes = slides.map(s => { for (const n of s.childNodes) if (n.nodeType === 8 && n.nodeValue.trim().startsWith('NOTES:')) return n.nodeValue.trim().slice(6).trim(); return ''; });
+  const grid = document.getElementById('menuGrid'), menu = document.getElementById('menu'), groups = {};
+  slides.forEach((s, i) => (groups[s.dataset.unit] = groups[s.dataset.unit] || []).push(i));
+  for (const u in groups) {
+    const box = document.createElement('div'); box.innerHTML = '<h4>' + u.toUpperCase() + '</h4>';
+    groups[u].forEach(i => { const b = document.createElement('button'); b.className = 'item'; b.dataset.i = i;
+      b.innerHTML = '<span>' + pad(i+1) + '</span><span>' + slides[i].dataset.title + '</span>';
+      b.onclick = () => { go(i); menu.classList.remove('open'); }; box.appendChild(b); });
     grid.appendChild(box);
   }
   const toggleMenu = () => { menu.classList.toggle('open'); grid.querySelectorAll('.item').forEach(b => b.classList.toggle('cur', +b.dataset.i === cur)); };
-
-  function go(i, push = true){
+  function go(i, push = true) {
     i = Math.max(0, Math.min(slides.length - 1, i));
     slides.forEach((s, k) => { s.classList.toggle('active', k === i); s.classList.toggle('past', k < i); });
     cur = i;
     document.getElementById('count').textContent = pad(i+1) + ' / ' + pad(slides.length);
     document.getElementById('bar').style.width = ((i+1)/slides.length*100) + '%';
-    document.getElementById('notesTitle').textContent = 'SPEAKER NOTES · ' + pad(i+1) + ' · ' + (slides[i].dataset.title || '').toUpperCase();
+    document.getElementById('notesTitle').textContent = 'SPEAKER NOTES · ' + pad(i+1);
     document.getElementById('notesBody').textContent = notes[i];
-    if (push) { try { history.replaceState(null, '', '#slide-' + (i+1)); } catch(e) {} }
+    if (push) { try { history.replaceState(null, '', '#slide-' + (i+1)); } catch (e) {} }
   }
   const fromHash = () => { const m = location.hash.match(/^#slide-(\d+)$/); return m ? +m[1]-1 : 0; };
   addEventListener('hashchange', () => go(fromHash(), false));
-
-  /* controls */
   document.getElementById('pBtn').onclick = () => go(cur-1);
   document.getElementById('xBtn').onclick = () => go(cur+1);
   const notesEl = document.getElementById('notes');
-  const toggleNotes = () => notesEl.classList.toggle('open');
-  document.getElementById('nBtn').onclick = toggleNotes;
+  document.getElementById('nBtn').onclick = () => notesEl.classList.toggle('open');
   document.getElementById('mBtn').onclick = toggleMenu;
   document.getElementById('menuClose').onclick = toggleMenu;
-  const fs = () => { try { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(()=>{}); } catch(e){} };
+  const fs = () => { try { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {} };
   document.getElementById('fBtn').onclick = fs;
-
   addEventListener('keydown', e => {
-    if (e.target.matches('input')) return;
     const k = e.key;
-    if (k === 'Escape' && menu.classList.contains('open')) { toggleMenu(); return; }
-    if (k === 'm' || k === 'M') { toggleMenu(); return; }
+    if (k === 'Escape' && menu.classList.contains('open')) return toggleMenu();
+    if (k === 'm' || k === 'M') return toggleMenu();
     if (menu.classList.contains('open')) return;
     if (['ArrowRight','PageDown',' '].includes(k)) { e.preventDefault(); go(cur+1); }
     else if (['ArrowLeft','PageUp'].includes(k)) { e.preventDefault(); go(cur-1); }
-    else if (k === 'Home') go(0);
-    else if (k === 'End') go(slides.length-1);
-    else if (k === 'n' || k === 'N') toggleNotes();
+    else if (k === 'Home') go(0); else if (k === 'End') go(slides.length-1);
+    else if (k === 'n' || k === 'N') notesEl.classList.toggle('open');
     else if (k === 'f' || k === 'F') fs();
   });
   let tx = null;
-  addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
-  addEventListener('touchend', e => {
-    if (tx === null || menu.classList.contains('open')) return; const dx = e.changedTouches[0].clientX - tx;
-    if (Math.abs(dx) > 50) go(cur + (dx < 0 ? 1 : -1)); tx = null;
-  });
-  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => go(slides.indexOf(document.getElementById(b.dataset.go)))));
+  addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive: true});
+  addEventListener('touchend', e => { if (tx === null || menu.classList.contains('open')) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) go(cur + (dx < 0 ? 1 : -1)); tx = null; });
 
-  /* field arithmetic helpers */
-  const pmulGF2 = (a, b) => { let r = 0; while (b) { if (b & 1) r ^= a; a <<= 1; b >>= 1; } return r; };
-  const pmod = (a, m) => { const dm = 31 - Math.clz32(m); while (a && (31 - Math.clz32(a)) >= dm) a ^= m << ((31 - Math.clz32(a)) - dm); return a; };
-  const gf8 = (a, b) => pmod(pmulGF2(a, b), 0b1011);
-
-  /* operation tables */
-  document.querySelectorAll('table[data-op]').forEach(t => {
-    const n = +t.dataset.n, op = t.dataset.op, hl = t.dataset.hl === undefined ? null : +t.dataset.hl;
-    const f = op === 'add' ? (a, b) => (n === 2 ? a ^ b : (a + b) % n) : op === 'mul' ? (a, b) => (a * b) % n : gf8;
-    const sym = op === 'add' ? '+' : '×';
-    let h = `<tr><th>${sym}</th>` + [...Array(n).keys()].map(b => `<th>${b}</th>`).join('') + '</tr>';
-    for (let a = 0; a < n; a++){
-      h += `<tr><th>${a}</th>`;
-      for (let b = 0; b < n; b++){ const v = f(a, b); h += `<td class="${hl !== null && v === hl ? 'hl' : ''}">${v}</td>`; }
-      h += '</tr>';
-    }
-    t.innerHTML = h;
-  });
-
-  /* dial drawing */
-  const NS = 'http://www.w3.org/2000/svg';
-  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const a in attrs) e.setAttribute(a, attrs[a]); parent && parent.appendChild(e); return e; };
-  function dial(svg, n, opts){
-    const {hit = new Set(), focus = null, order = [], dark = false} = opts;
-    const ink = dark ? '#E9EBEE' : '#0C0E13', faint = dark ? '#2C313B' : '#C3C7CF', sig = '#FF4A1C';
-    svg.innerHTML = '';
-    const c = 320, R = 250;
-    el('circle', {cx:c, cy:c, r:R, fill:'none', stroke:faint, 'stroke-width':2}, svg);
-    if (order.length > 1){
-      const pts = order.map(k => { const a = (k/n)*2*Math.PI - Math.PI/2; return [c + R*0.86*Math.cos(a), c + R*0.86*Math.sin(a)]; });
-      el('polyline', {points: pts.map(p => p.join(',')).join(' '), fill:'none', stroke:sig, 'stroke-width':2.5, 'stroke-opacity':.55}, svg);
-    }
-    for (let k = 0; k < n; k++){
-      const a = (k/n)*2*Math.PI - Math.PI/2, x = c + R*Math.cos(a), y = c + R*Math.sin(a);
-      const on = hit.has(k), f = k === focus;
-      el('circle', {cx:x, cy:y, r: f ? 30 : 22, fill: f ? sig : on ? ink : (dark ? '#0C0E13' : '#E9EBEE'), stroke: f ? sig : on ? ink : faint, 'stroke-width':2}, svg);
-      const t = el('text', {x, y: y+6, 'text-anchor':'middle', fill: f ? '#0C0E13' : on ? (dark ? '#0C0E13' : '#E9EBEE') : (dark ? '#6B7280' : '#5A6170'), 'font-weight': f||on ? 600 : 400}, svg);
-      t.textContent = k;
-    }
+  /* quiz */
+  const cards = [...document.querySelectorAll('.qcard')], score = document.getElementById('qscore');
+  const answered = () => cards.filter(c => c.querySelector('.opt.sel')).length;
+  cards.forEach(c => c.querySelectorAll('.opt').forEach(o => o.addEventListener('click', () => {
+    if (c.classList.contains('checked')) return;
+    c.querySelectorAll('.opt').forEach(x => x.classList.toggle('sel', x === o));
+    score.textContent = answered() + ' / ' + cards.length + ' answered';
+  })));
+  if (score) {
+    document.getElementById('qcheck').onclick = () => {
+      let right = 0;
+      cards.forEach(c => { c.classList.add('checked'); const a = +c.dataset.a;
+        c.querySelectorAll('.opt').forEach(o => { const j = +o.dataset.j; o.classList.toggle('right', j === a); o.classList.toggle('wrong', j !== a); if (j === a && o.classList.contains('sel')) right++; }); });
+      score.textContent = 'Score: ' + right + ' / ' + cards.length;
+    };
+    document.getElementById('qreset').onclick = () => {
+      cards.forEach(c => { c.classList.remove('checked'); c.querySelectorAll('.opt').forEach(o => o.classList.remove('sel','right','wrong')); });
+      score.textContent = '0 / ' + cards.length + ' answered';
+    };
   }
-
-  /* generator dial */
-  const genDial = document.getElementById('genDial'), genOut = document.getElementById('genOut');
-  function showGen(step){
-    const seq = []; let v = 0;
-    do { v = (v + step) % 12; seq.push(v); } while (v !== 0 && seq.length < 13);
-    const hit = new Set(seq), all = hit.size === 12;
-    dial(genDial, 12, {hit, order:[0, ...seq], dark:true, focus: step});
-    genOut.innerHTML = seq.join(' → ') + '<br><span style="color:' + (all ? '#FF4A1C' : '#9AA1AE') + '">' +
-      (all ? `All 12 hours visited: ${step} is a generator.` : `Only ${hit.size} of 12 hours: ${step} is not a generator.`) + '</span>';
-    document.querySelectorAll('[data-gen]').forEach(b => b.classList.toggle('on', +b.dataset.gen === step));
-  }
-  document.querySelectorAll('[data-gen]').forEach(b => b.addEventListener('click', () => showGen(+b.dataset.gen)));
-  showGen(5);
-
-  /* mod dial */
-  const modA = document.getElementById('modA'), modN = document.getElementById('modN'), modOut = document.getElementById('modOut');
-  function showMod(){
-    let a = parseInt(modA.value, 10), n = parseInt(modN.value, 10);
-    if (!Number.isFinite(a)) a = 0;
-    if (!Number.isFinite(n) || n < 2) n = 2; if (n > 30) n = 30;
-    const r = ((a % n) + n) % n;
-    dial(document.getElementById('modDial'), n, {focus:r});
-    modOut.innerHTML = `${a} mod ${n} = <span class="sig">${r}</span>`;
-  }
-  modA.addEventListener('input', showMod); modN.addEventListener('input', showMod); showMod();
-
-  /* pentagon */
-  (function(){
-    const svg = document.getElementById('pentagon'), c = 235, R = 190;
-    const pts = [...Array(5)].map((_, k) => { const a = k*2*Math.PI/5 - Math.PI/2; return [c + R*Math.cos(a), c + R*Math.sin(a)]; });
-    pts.forEach(([x, y]) => { const dx = x - c, dy = y - c; el('line', {x1: c - dx*1.12, y1: c - dy*1.12, x2: c + dx*1.12, y2: c + dy*1.12, stroke:'#2443E6', 'stroke-width':1.5, 'stroke-dasharray':'6 7'}, svg); });
-    el('polygon', {points: pts.map(p => p.join(',')).join(' '), fill:'none', stroke:'#0C0E13', 'stroke-width':4}, svg);
-    el('path', {d:`M ${c+70} ${c} A 70 70 0 1 1 ${c+21.6} ${c-66.6}`, fill:'none', stroke:'#FF4A1C', 'stroke-width':5}, svg);
-    el('polygon', {points:`${c+21.6},${c-80} ${c+21.6},${c-53} ${c+44},${c-70}`, fill:'#FF4A1C'}, svg);
-    pts.forEach(([x, y], k) => { el('circle', {cx:x, cy:y, r:20, fill:'#0C0E13'}, svg); const t = el('text', {x, y: y+6, 'text-anchor':'middle', fill:'#E9EBEE', 'font-weight':600}, svg); t.textContent = k; });
-    const lab = el('text', {x:c, y:c+8, 'text-anchor':'middle', fill:'#FF4A1C', 'font-weight':600}, svg); lab.textContent = '72°';
-  })();
-
-  /* Euclid stepper */
-  const eA = document.getElementById('eA'), eB = document.getElementById('eB');
-  function showEuclid(){
-    let a = Math.abs(parseInt(eA.value, 10)), b = Math.abs(parseInt(eB.value, 10));
-    const box = document.getElementById('eSteps'), out = document.getElementById('eOut');
-    if (!a || !b || a > 1e12 || b > 1e12){ box.innerHTML = '<div class="st"><span>!</span><span>Enter two positive whole numbers.</span></div>'; out.textContent = ''; return; }
-    if (b > a) [a, b] = [b, a];
-    const rows = []; let i = 1;
-    while (b && rows.length < 12){ const q = Math.floor(a/b), r = a % b; rows.push([i++, a, q, b, r]); a = b; b = r; }
-    box.innerHTML = rows.map(([k, x, q, y, r], idx) =>
-      `<div class="st"><span>${k}</span><span>${x} = ${q}·${y} + <b class="${r === 0 ? '' : (idx === rows.length-2 ? 'hl' : 'cob')}">${r}</b></span></div>`).join('') +
-      (b ? '<div class="st"><span>…</span><span>more steps</span></div>' : '');
-    out.innerHTML = b ? '' : `gcd = <span class="sig">${a}</span>`;
-  }
-  eA.addEventListener('input', showEuclid); eB.addEventListener('input', showEuclid); showEuclid();
-
-  /* GF(7) pairs */
-  (function(){
-    const p = 7, box = document.getElementById('pairs');
-    const inv = a => { for (let x = 1; x < p; x++) if ((a*x) % p === 1) return x; };
-    for (let a = 1; a < p; a++){
-      const d = document.createElement('div'); d.className = 'pair'; d.tabIndex = 0; d.dataset.a = a; d.dataset.i = inv(a);
-      d.innerHTML = `<span class="num">${a}</span><small>${a}⁻¹ = ${inv(a)}</small>`;
-      box.appendChild(d);
-    }
-    const tiles = [...box.children];
-    const light = t => tiles.forEach(x => x.classList.toggle('on', x === t || x.dataset.a === t.dataset.i));
-    tiles.forEach(t => { t.addEventListener('mouseenter', () => light(t)); t.addEventListener('focus', () => light(t)); t.addEventListener('click', () => light(t)); });
-    light(tiles[2]);
-  })();
-
-  /* GF(2^8) calculator */
-  const gmul = (a, b) => { let p = 0; for (let i = 0; i < 8; i++){ if (b & 1) p ^= a; const hi = a & 0x80; a = (a << 1) & 0xFF; if (hi) a ^= 0x1B; b >>= 1; } return p; };
-  const hex = v => v.toString(16).toUpperCase().padStart(2, '0');
-  const bin = v => v.toString(2).padStart(8, '0');
-  const gA = document.getElementById('gA'), gB = document.getElementById('gB');
-  function showGF(){
-    const out = document.getElementById('gOut'), ok = s => /^[0-9a-fA-F]{1,2}$/.test(s.trim());
-    if (!ok(gA.value) || !ok(gB.value)){ out.innerHTML = '<div class="st"><span>!</span><span>Type two hex bytes, 00 to FF.</span></div>'; return; }
-    const a = parseInt(gA.value, 16), b = parseInt(gB.value, 16);
-    out.innerHTML =
-      `<div class="st"><span>A</span><span>${hex(a)} = ${bin(a)}</span></div>` +
-      `<div class="st"><span>B</span><span>${hex(b)} = ${bin(b)}</span></div>` +
-      `<div class="st"><span>+</span><span>A ⊕ B = <b class="hl">${hex(a ^ b)}</b> <span style="color:#9AA1AE">(XOR)</span></span></div>` +
-      `<div class="st"><span>•</span><span>A • B = <b class="hl">${hex(gmul(a, b))}</b> <span style="color:#9AA1AE">(mod 11B)</span></span></div>`;
-  }
-  gA.addEventListener('input', showGF); gB.addEventListener('input', showGF); showGF();
-
-  /* practice reveals */
-  document.querySelectorAll('.q .reveal').forEach(b => b.addEventListener('click', () => {
-    const q = b.closest('.q'); q.classList.toggle('open'); b.textContent = q.classList.contains('open') ? 'Hide answer' : 'Show answer';
-  }));
-
   go(fromHash(), false);
 })();
 </script>
